@@ -5,6 +5,7 @@ import cv2, os
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Conv2D, Flatten, MaxPooling2D, Dropout, BatchNormalization
 from tensorflow.keras.preprocessing import image
+from tensorflow.keras.utils import to_categorical
 
 train_dir = "../project/asl-alphabet/asl_alphabet_train/asl_alphabet_train"
 eval_dir =  "../project/asl-alphabet-test"
@@ -19,8 +20,10 @@ def load_images(directory):
             # 64x64크기의 이미지
             X.append(image)
             Y.append(idx)
-    X = np.array(X)
-    Y = np.array(Y)
+    X = np.array(X).astype('float32')/255.
+    Y = np.array(Y).astype('float32')
+    Y = to_categorical(Y, num_classes=29)
+
     return(X,Y)
 '''
 print(X, Y)
@@ -34,7 +37,7 @@ X =[[[[230   2   4]
 
 Y = [ 0  0  0 ... 28 28 28]
 '''
-
+   
 uniq_labels = sorted(os.listdir(train_dir)) # sorted() -> 정렬함수
 X,Y = load_images(directory=train_dir)
 
@@ -46,21 +49,21 @@ if uniq_labels == sorted(os.listdir(eval_dir)):
 # 트레인 폴더의 파일 리스트와 검증폴더의 파일 리스트가 같다면 트레인 폴더와 같게 x, y를 나눈다.
 
 print(X_eval.shape, Y_eval.shape) #(870, 64, 64, 3) (870,)
-'''
+
 np.save('../project/npy/X_train.npy',X)
 np.save('../project/npy/Y_train.npy',Y)
 np.save('../project/npy/X_eval.npy',X_eval)
 np.save('../project/npy/Y_eval.npy',Y_eval)
-'''
 
+'''
 from sklearn.model_selection import train_test_split
 x_train, x_test, y_train, y_test = train_test_split(
     X, Y, test_size=0.2, stratify=Y)
 
 ########## val ? ##############################
-x_train, x_val, y_train, y_val = train_test_split(
-    x_train, y_train, test_size=0.2
-)
+# x_train, x_val, y_train, y_val = train_test_split(
+#     x_train, y_train, test_size=0.2
+# )
 # x_train = X[:69600]
 # y_train = Y[:69600]
 # x_test = X[:17400]
@@ -100,7 +103,7 @@ print_images(image_list = x_train)
 
 print("Evaluation images: ")
 print_images(image_list = X_eval)
-'''
+
 from tensorflow.keras.utils import to_categorical
 y_train = to_categorical(y_train, num_classes=30) #num_classes = total number of classes
 y_test = to_categorical(y_test, num_classes=30)
@@ -109,7 +112,17 @@ y_test = to_categorical(y_test, num_classes=30)
 from sklearn.utils import shuffle
 x_train, y_train = shuffle(x_train, y_train, random_state=42)
 x_test, y_test = shuffle(x_test, y_test, random_state=42)
-x_train = x_train[:]
+x_train = x_train[:30000]
+x_test = x_test[:30000]
+y_train = y_train[:30000]
+y_test = y_test[:30000]
 
+import seaborn as sns
+import pandas as pd
+df = pd.DataFrame()
+df["labels"]=y_train
+lab = df['labels']
+dist = lab.value_counts()
+sns.countplot(lab)
+print(uniq_labels)
 '''
-
