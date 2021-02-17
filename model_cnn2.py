@@ -143,13 +143,13 @@ from keras.optimizers import Adam,RMSprop
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau,ModelCheckpoint
 es=EarlyStopping(patience=20, verbose=1, monitor='val_loss',restore_best_weights = True)
 rl=ReduceLROnPlateau(patience=10, verbose=1, monitor='val_loss')
-filepath = '../project/modelcp/cnn2_{val_loss:.3f}.hdf5'
+filepath = '../project/modelcp/cnn3_{val_loss:.3f}.hdf5'
 cp = ModelCheckpoint(filepath=filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='auto')
 
-model.compile(optimizer='rmsprop', loss = 'categorical_crossentropy', metrics = ['accuracy'])
-history=model.fit(x_train, y_train, epochs = 100,callbacks=[es,rl,cp], batch_size = 64, validation_data=(x_val,y_val))
+model.compile(optimizer='adam', loss = 'categorical_crossentropy', metrics = ['accuracy'])
+history=model.fit(x_train, y_train, epochs = 1000,callbacks=[es,rl,cp], batch_size = 16, validation_data=(x_val,y_val))
 
-model.save('../project/h5/cnn2_history.hdf5')
+model.save('../project/h5/cnn3.hdf5')
 
 results = model.evaluate(x = x_test, y = y_test, verbose = 0)
 print('Accuracy for test images:', round(results[1]*100, 3), '%')                                   
