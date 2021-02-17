@@ -11,13 +11,68 @@ from numpy import asarray
 import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score
 
-X = np.load('../project/npy/X_train.npy')
-Y = np.load('../project/npy/Y_train.npy')
-X_eval = np.load('../project/npy/X_eval.npy')
-Y_eval = np.load('../project/npy/Y_eval.npy')
+import tensorflow as tf
+import matplotlib.pyplot as plt
+import cv2, os
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Conv2D, Flatten, MaxPooling2D, Dropout, BatchNormalization
+from tensorflow.keras.preprocessing import image
+from tensorflow.keras.utils import to_categorical
+
+train_dir = "../project/asl-alphabet/asl_alphabet_train/asl_alphabet_train"
+eval_dir =  "../project/asl-alphabet-test"
+
+def load_images(directory):
+    X = [] #image
+    Y = [] #label
+    for idx, label in enumerate(uniq_labels):
+        for file in os.listdir(directory +'/' + label):
+            filepath = directory + '/' + label + '/' + file
+            image = cv2.resize(cv2.imread(filepath), (64,64))
+            # 64x64크기의 이미지
+            X.append(image)
+            Y.append(idx)
+    X = np.array(X).astype('float32')/255.
+    Y = np.array(Y).astype('float32')
+    Y = to_categorical(Y, num_classes=29)
+
+    return(X,Y)
+'''
+print(X, Y)
+X =[[[[230   2   4]
+    [187   9   9]
+    [183  10  14]
+    ...
+    [190  17  23]
+    [188  17  20]
+    [212  12  15]]
+
+Y = [ 0  0  0 ... 28 28 28]
+'''
+   
+uniq_labels = sorted(os.listdir(train_dir)) # sorted() -> 정렬함수
+X,Y = load_images(directory=train_dir)
+
+print(X.shape, Y.shape) #(87000, 64, 64, 3) (87000,)
+
+if uniq_labels == sorted(os.listdir(eval_dir)):
+    X_eval, Y_eval = load_images(directory=eval_dir)
+
+# 트레인 폴더의 파일 리스트와 검증폴더의 파일 리스트가 같다면 트레인 폴더와 같게 x, y를 나눈다.
+
+print(X_eval.shape, Y_eval.shape) #(870, 64, 64, 3) (870,)
+print(X_eval, Y_eval)
+
+from sklearn.model_selection import train_test_split
+x_train, x_test, y_train, y_test = train_test_split(
+    X, Y, test_size=0.1, random_state=42, stratify=Y)
+
+x_train, x_val, y_train, y_val = train_test_split(
+    x_train, y_train, test_size=0.1, random_state=42
+)
 
 
-model=load_model('../project/h5/cnn1.h5')
+model=load_model('../project/h5/cnn2.hdf5')
 
 
 

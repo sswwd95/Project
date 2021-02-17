@@ -49,7 +49,24 @@ if uniq_labels == sorted(os.listdir(eval_dir)):
 # 트레인 폴더의 파일 리스트와 검증폴더의 파일 리스트가 같다면 트레인 폴더와 같게 x, y를 나눈다.
 
 print(X_eval.shape, Y_eval.shape) #(870, 64, 64, 3) (870,)
+print(X_eval, Y_eval)
+'''
+ [[0.7372549  0.7647059  0.8235294 ]
+   [0.7529412  0.77254903 0.83137256]
+   [0.74509805 0.7647059  0.8235294 ]
+   ...
+   [0.45490196 0.6117647  0.8784314 ]
+   [0.47058824 0.6392157  0.9019608 ]
+   [0.48235294 0.654902   0.90588236]]]] 
 
+[[1. 0. 0. ... 0. 0. 0.]
+ [1. 0. 0. ... 0. 0. 0.]
+ [1. 0. 0. ... 0. 0. 0.]
+ ...
+ [0. 0. 0. ... 0. 0. 1.]
+ [0. 0. 0. ... 0. 0. 1.]
+ [0. 0. 0. ... 0. 0. 1.]]
+ '''
 
 print(X.shape, Y.shape) #(87000, 64, 64, 3) (87000,)
 print(" Max value of X: ",X.max())
@@ -91,7 +108,7 @@ plt.suptitle("Example of each sign", fontsize=20)
 
 from sklearn.model_selection import train_test_split
 x_train, x_test, y_train, y_test = train_test_split(
-    X, Y, test_size=0.2, random_state=42, stratify=Y)
+    X, Y, test_size=0.1, random_state=42, stratify=Y)
 
 x_train, x_val, y_train, y_val = train_test_split(
     x_train, y_train, test_size=0.1, random_state=42
@@ -118,20 +135,21 @@ model.add(MaxPooling2D(pool_size=(2, 2)))
 model.add(Flatten())
 model.add(Dense(128, activation='relu'))
 model.add(Dropout(0.20))
+model.add(Dense(64, activation='relu'))
 model.add(Dense(29, activation='softmax'))
 model.summary()
 
-from keras.optimizers import Adam
+from keras.optimizers import Adam,RMSprop
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau,ModelCheckpoint
-es=EarlyStopping(patience=20, verbose=1, monitor='val_loss',restore_best_weights = True)
-rl=ReduceLROnPlateau(patience=10, verbose=1, monitor='val_loss')
-filepath = '..project/modelcp/cnn2.h5'
-cp = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
+es=EarlyStopping(patience=10, verbose=1, monitor='val_loss',restore_best_weights = True)
+rl=ReduceLROnPlateau(patience=5, verbose=1, monitor='val_loss')
+filepath = '../project/modelcp/cnn2_{val_loss:.3f}.hdf5'
+cp = ModelCheckpoint(filepath=filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='auto')
 
-model.compile(optimizer=Adam(learning_rate=0.001), loss = 'categorical_crossentropy', metrics = ['accuracy'])
-hist=model.fit(x_train, y_train, epochs = 50,callbacks=[es,rl,cp], batch_size = 128, validation_data=(x_val,y_val))
+model.compile(optimizer='rmsprop', loss = 'categorical_crossentropy', metrics = ['accuracy'])
+hist=model.fit(x_train, y_train, epochs = 20,callbacks=[es,rl,cp], batch_size = 64, validation_data=(x_val,y_val))
 
-model.save('../project/h5/cnn2.h5')
+model.save('../project/h5/cnn2_rms.hdf5')
 
 results = model.evaluate(x = x_test, y = y_test, verbose = 0)
 print('Accuracy for test images:', round(results[1]*100, 3), '%')                                   
@@ -141,3 +159,18 @@ print('Accuracy for evaluation images:', round(results[1]*100, 3), '%')
 
 # Accuracy for test images: 94.431 %
 # Accuracy for evaluation images: 30.92 %
+
+# Accuracy for test images: 99.356 %
+# Accuracy for evaluation images: 24.023 %
+
+# 에폭 20
+# Accuracy for test images: 99.598 %
+# Accuracy for evaluation images: 31.149 %
+
+# optimizer = rmsprop(lr=0.002)
+# Accuracy for test images: 99.977 %
+# Accuracy for evaluation images: 29.77 %
+
+#optimizer =rmsprop기본값
+# Accuracy for test images: 99.977 %
+# Accuracy for evaluation images: 30.115 %
