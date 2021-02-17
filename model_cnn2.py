@@ -84,7 +84,7 @@ print(" Shape of Y: ",Y.shape)
 #  Max value of Y:  1.0
 #  Min value of Y:  0.0
 #  Shape of Y:  (87000, 30)
-
+'''
 plt.figure(figsize=(24,8))
 # A
 plt.subplot(2,5,1)
@@ -104,7 +104,7 @@ plt.axis("off")
 
 plt.suptitle("Example of each sign", fontsize=20)
 # plt.show()
-
+'''
 
 from sklearn.model_selection import train_test_split
 x_train, x_test, y_train, y_test = train_test_split(
@@ -141,21 +141,37 @@ model.summary()
 
 from keras.optimizers import Adam,RMSprop
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau,ModelCheckpoint
-es=EarlyStopping(patience=10, verbose=1, monitor='val_loss',restore_best_weights = True)
-rl=ReduceLROnPlateau(patience=5, verbose=1, monitor='val_loss')
+es=EarlyStopping(patience=20, verbose=1, monitor='val_loss',restore_best_weights = True)
+rl=ReduceLROnPlateau(patience=10, verbose=1, monitor='val_loss')
 filepath = '../project/modelcp/cnn2_{val_loss:.3f}.hdf5'
 cp = ModelCheckpoint(filepath=filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='auto')
 
 model.compile(optimizer='rmsprop', loss = 'categorical_crossentropy', metrics = ['accuracy'])
-hist=model.fit(x_train, y_train, epochs = 20,callbacks=[es,rl,cp], batch_size = 64, validation_data=(x_val,y_val))
+history=model.fit(x_train, y_train, epochs = 100,callbacks=[es,rl,cp], batch_size = 64, validation_data=(x_val,y_val))
 
-model.save('../project/h5/cnn2_rms.hdf5')
+model.save('../project/h5/cnn2_history.hdf5')
 
 results = model.evaluate(x = x_test, y = y_test, verbose = 0)
 print('Accuracy for test images:', round(results[1]*100, 3), '%')                                   
 results = model.evaluate(x = X_eval, y = Y_eval, verbose = 0)
 print('Accuracy for evaluation images:', round(results[1]*100, 3), '%')
 
+acc=history.history['accuracy']
+val_acc=history.history['val_accuracy']
+loss=history.history['loss']
+val_loss=history.history['val_loss']
+
+plt.plot(acc)
+plt.plot(val_acc)
+plt.plot(loss)
+plt.plot(val_loss)
+
+plt.title('loss & acc')
+plt.ylabel('loss, acc')
+plt.xlabel('epoch')
+
+plt.legend(['acc', 'val_acc', 'loss', 'val_loss'])
+plt.show()
 
 # Accuracy for test images: 94.431 %
 # Accuracy for evaluation images: 30.92 %
@@ -174,3 +190,6 @@ print('Accuracy for evaluation images:', round(results[1]*100, 3), '%')
 #optimizer =rmsprop기본값
 # Accuracy for test images: 99.977 %
 # Accuracy for evaluation images: 30.115 %
+
+# Accuracy for test images: 100.0 %
+# Accuracy for evaluation images: 24.713 %
