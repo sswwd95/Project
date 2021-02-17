@@ -1,3 +1,18 @@
+############################gpu메모리##################################
+import tensorflow as tf
+gpus = tf.config.experimental.list_physical_devices('GPU')
+if gpus:
+  try:
+    # Currently, memory growth needs to be the same across GPUs
+    for gpu in gpus:
+      tf.config.experimental.set_memory_growth(gpu, True)
+    logical_gpus = tf.config.experimental.list_logical_devices('GPU')
+    print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
+  except RuntimeError as e:
+    # Memory growth must be set before GPUs have been initialized
+    print(e)
+############################################################################
+
 import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
@@ -46,12 +61,18 @@ plt.imshow(X[7000])
 plt.axis("off")
 
 plt.suptitle("Example of each sign", fontsize=20)
-plt.show()
+# plt.show()
 
 
 from sklearn.model_selection import train_test_split
 x_train, x_test, y_train, y_test = train_test_split(
     X, Y, test_size=0.2, random_state=42, stratify=Y)
+
+x_train, x_val, y_train, y_val = train_test_split(
+    x_train, y_train, test_size=0.2, random_state=42
+)
+
+
 
 # x_train = x_train.reshape(-1,64,64,3)
 
@@ -97,9 +118,9 @@ es=EarlyStopping(patience=20, verbose=1, monitor='val_loss',restore_best_weights
 rl=ReduceLROnPlateau(patience=10, verbose=1, monitor='val_loss')
 
 model.compile(optimizer=Adam(learning_rate=0.01), loss = 'categorical_crossentropy', metrics = ['accuracy'])
-hist = model.fit(x_train, y_train, epochs = 5,callbacks=[es,rl], batch_size = 64, validation_data=(x_test,y_test))
+hist = model.fit(x_train, y_train, epochs = 5,callbacks=[es,rl], batch_size = 64, validation_data=(x_val, y_val))
 
-model.save('../project/h5/cnn.h5')
+model.save('../project/h5/cnn1.h5')
 
 results = model.evaluate(x = x_test, y = y_test, verbose = 0)
 print('Accuracy for test images:', round(results[1]*100, 3), '%')                                   
@@ -154,3 +175,8 @@ print_images(image_list = X_eval)
 
 # Accuracy for test images: 94.431 %
 # Accuracy for evaluation images: 30.92 %
+
+
+# val 넣었을 때(cnn1)
+# Accuracy for test images: 80.695 %
+# Accuracy for evaluation images: 27.356 %
