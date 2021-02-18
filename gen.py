@@ -20,11 +20,9 @@ train_gen = ImageDataGenerator(
 test_gen = ImageDataGenerator(rescale=1./255)
 
 train_dir = "../project/asl-alphabet/asl_alphabet_train/asl_alphabet_train"
-test_dir = "../project/asl-alphabet/asl_alphabet_test/asl_alphabet_test"
-
 eval_dir =  "../project/asl-alphabet-test"
 
-batch_size = 32
+batch_size = 64
 train_data = train_gen.flow_from_directory(
                 train_dir,
                 target_size = (64,64),
@@ -33,23 +31,22 @@ train_data = train_gen.flow_from_directory(
 )
 
 test_data = test_gen.flow_from_directory(
-                test_dir,
+                eval_dir,
                 target_size = (64,64),
                 batch_size = batch_size,
                 class_mode = 'categorical'
 )
 
 
-
 classes = list(train_data.class_indices)
 print(classes)
 # ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'del', 'nothing', 'space']
 
-print(train_data[0][0].shape)#, val_data[0][0].shape)
-# Found 69600 images belonging to 29 classes.
-# Found 17400 images belonging to 29 classes.
+print(train_data[0][0].shape, test_data[0][0].shape)
+# Found 87000 images belonging to 29 classes.
+# Found 870 images belonging to 29 classes.
 # (32, 64, 64, 3) (32, 64, 64, 3)
-'''
+
 from keras.layers import Conv2D, Dense, Dropout, Flatten,MaxPooling2D,BatchNormalization,Activation
 from keras.models import Sequential
 
@@ -78,12 +75,14 @@ filepath = '../project/modelcp/gen_{val_loss:.3f}.hdf5'
 cp = ModelCheckpoint(filepath=filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='auto')
 
 model.compile(optimizer='adam', loss = 'categorical_crossentropy', metrics = ['accuracy'])
-history=model.fit(train_data, epochs = 50, callbacks=[es,rl,cp], batch_size = 16, validation_data=val_data)
+history=model.fit(train_data,steps_per_epoch=87000//64, epochs = 5, callbacks=[es,rl,cp], batch_size = 64, validation_data=test_data)
 
 model.save('../project/h5/gen.hdf5')
 
-score = model.evaluate_generator(val_data)
+score = model.evaluate_generator(test_data)
 print('Accuracy for test images:', round(score[1]*100, 3), '%')
+# Accuracy for test images: 29.31 %
+
 
 history_frame = pd.DataFrame(history.history)
 history_frame.loc[:, ['loss', 'val_loss']].plot()
@@ -97,4 +96,3 @@ plt.imshow(sample)
 plt.title("Actual: A, Predicted: {}".format(pred))
 plt.axis('off')
 plt.show()
-'''
