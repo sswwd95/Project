@@ -120,3 +120,4 @@ print('test : ', test_results*100,'%')
 y_predict=np.argmax(test_results, axis=-1)
 print('예측 라벨 : ', y_predict)
 
+y_pred = [y_test[list(i).index(max(list(i)))]for i in y_pred]
