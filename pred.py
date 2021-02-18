@@ -1,16 +1,7 @@
-import tensorflow
-import numpy as np
-from keras.preprocessing.image import ImageDataGenerator
-from keras.models import Sequential,load_model
-from keras.layers import Conv2D, MaxPooling2D, Flatten, Dropout, \
-    BatchNormalization, Activation, Dense
-from keras.optimizers import Adam
-from sklearn.model_selection import train_test_split
-import PIL.Image as pilimg
-from numpy import asarray
-import matplotlib.pyplot as plt
-from sklearn.metrics import accuracy_score
 
+import numpy as np
+from tensorflow.keras.models import load_model
+from tensorflow.keras.preprocessing import image
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import cv2, os
@@ -18,6 +9,8 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Conv2D, Flatten, MaxPooling2D, Dropout, BatchNormalization
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.utils import to_categorical
+from PIL import Image
+
 
 train_dir = "../project/asl-alphabet/asl_alphabet_train/asl_alphabet_train"
 eval_dir =  "../project/asl-alphabet-test"
@@ -37,31 +30,13 @@ def load_images(directory):
     Y = to_categorical(Y, num_classes=29)
 
     return(X,Y)
-'''
-print(X, Y)
-X =[[[[230   2   4]
-    [187   9   9]
-    [183  10  14]
-    ...
-    [190  17  23]
-    [188  17  20]
-    [212  12  15]]
 
-Y = [ 0  0  0 ... 28 28 28]
-'''
-   
+
 uniq_labels = sorted(os.listdir(train_dir)) # sorted() -> 정렬함수
 X,Y = load_images(directory=train_dir)
 
-print(X.shape, Y.shape) #(87000, 64, 64, 3) (87000,)
-
 if uniq_labels == sorted(os.listdir(eval_dir)):
     X_eval, Y_eval = load_images(directory=eval_dir)
-
-# 트레인 폴더의 파일 리스트와 검증폴더의 파일 리스트가 같다면 트레인 폴더와 같게 x, y를 나눈다.
-
-print(X_eval.shape, Y_eval.shape) #(870, 64, 64, 3) (870,)
-print(X_eval, Y_eval)
 
 from sklearn.model_selection import train_test_split
 x_train, x_test, y_train, y_test = train_test_split(
@@ -72,48 +47,81 @@ x_train, x_val, y_train, y_val = train_test_split(
 )
 
 
-model=load_model('../project/h5/cnn2.hdf5')
+#2. 모델 + 훈련
+model=load_model('../project/h5/cnn2_history.hdf5')
 
+#3. 평가
+loss, acc=model.evaluate(x_test, y_test, batch_size=100)
+print('loss : {:.4f}, acc : {:.2f}'.format(loss, acc*100))
+# loss : 0.0000, acc : 100.00
 
+pred = model.predict(x_test)
+print(pred.shape)
+# (8700, 29)
 
-loss, acc = model.evaluate(X_eval, Y_eval)
-print('loss, acc : ', loss, acc)
-# loss, acc :  0.30173632502555847 0.90625
 '''
-image = pilimg.open('../data/image/me/star3.jpg')
-pix = image.resize((128,128))
-pix = np.array(pix)
-test = pix.reshape(1,128,128,3)/255.
+test_image=image.load_img("../project/test/A_test.jpg", target_size=(64,64))
+test_image=image.img_to_array(test_image)
+x_predict=np.expand_dims(test_image, axis=0)
 
-pred_answer = [0] # 여자
-pred_no_answer = [1] # 남자
+pred = model.predict(x_predict)
+pred = np.argmax(pred,axis=1)
+print('이 손의 뜻은? : ',pred)
 
-pred = model.predict(test)
-print('pred : ',pred)
-
-print('여자일 확률은 ', (1-pred)*100, '%')
-print('남자일 확률은 ', pred*100, '%')
-
-if pred >0.5:
-    print('당신은 남자입니다!')
-else:
-    print('당신은 여자입니다!')
-
-# 나
-# pred :  [[0.00595943]]
-# 여자일 확률은  [[99.40405]] %
-# 남자일 확률은  [[0.5959431]] %
-# 당신은 여자입니다!
-
-# 영리
-# pred :  [[0.00538115]]
-# 여자일 확률은  [[99.46188]] %
-# 남자일 확률은  [[0.53811514]] %
-# 당신은 여자입니다!
-
-# 마동석
-# pred :  [[0.99944156]]
-# 여자일 확률은  [[0.05584359]] %
-# 남자일 확률은  [[99.94415]] %
-# 당신은 남자입니다!
+if pred==[i]:print('A')
 '''
+classes = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 
+           'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 
+           'W', 'X', 'Y', 'Z', 'nothing', 'space', 'del']
+
+labels_dict = {'A':0,'B':1,'C':2,'D':3,'E':4,'F':5,'G':6,'H':7,'I':8,'J':9,'K':10,'L':11,'M':12,
+                   'N':13,'O':14,'P':15,'Q':16,'R':17,'S':18,'T':19,'U':20,'V':21,'W':22,'X':23,'Y':24,
+                   'Z':25,'space':26,'del':27,'nothing':28}
+
+test_dir = "../project/test2/"
+
+def load_test_data():
+    images = []
+    names = []
+    size = 64,64
+    for image in os.listdir(test_dir):
+        temp = cv2.imread(test_dir + '/' + image)
+        temp = cv2.resize(temp, size)
+        images.append(temp)
+        names.append(image)
+    images = np.array(images)
+    images = images.astype('float32')/255.0
+    return images, names
+
+test_images, test_img_names = load_test_data()
+
+# make predictions on an image and append it to the list (predictions).
+predictions = [model.predict_classes(image.reshape(1,64,64,3))[0] for image in test_images]
+
+def get_labels_for_plot(predictions):
+    predictions_labels = []
+    for i in range(len(predictions)):
+        for ins in labels_dict:
+            if predictions[i] == labels_dict[ins]:
+                predictions_labels.append(ins)
+                break
+    return predictions_labels
+
+predictions_labels_plot = get_labels_for_plot(predictions)
+
+predfigure = plt.figure(figsize = (13,13))
+def plot_image_1(fig, image, label, prediction, predictions_label, row, col, index):
+    fig.add_subplot(row, col, index)
+    plt.axis('off')
+    plt.imshow(image)
+    title = "prediction : [" + str(predictions_label) + "] "+ "\n" + label
+    plt.title(title)
+    return
+
+image_index = 0
+row = 5
+col = 6
+for i in range(1,(row*col-1)):
+    plot_image_1(predfigure, test_images[image_index], test_img_names[image_index], predictions[image_index], predictions_labels_plot[image_index], row, col, i)
+    image_index = image_index + 1
+plt.show()

@@ -1,3 +1,4 @@
+'''
 ############################gpu메모리##################################
 import tensorflow as tf
 gpus = tf.config.experimental.list_physical_devices('GPU')
@@ -12,7 +13,7 @@ if gpus:
     # Memory growth must be set before GPUs have been initialized
     print(e)
 ############################################################################
-
+'''
 import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt

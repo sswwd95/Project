@@ -189,7 +189,7 @@ es=EarlyStopping(patience=20, verbose=1, monitor='val_loss',restore_best_weights
 rl=ReduceLROnPlateau(patience=10, verbose=1, monitor='val_loss')
 
 model.compile(optimizer=Adam(learning_rate=0.001), loss = 'categorical_crossentropy', metrics = ['accuracy'])
-hist = model.fit(X_train, y_train, epochs = 5,callbacks=[es,rl], batch_size = 64, validation_data=(X_val,y_val))
+hist = model.fit(X_train, y_train, epochs = 1000,callbacks=[es,rl], batch_size = 64, validation_data=(X_val,y_val))
 
 model.save('../project/h5/fit.h5')
 
