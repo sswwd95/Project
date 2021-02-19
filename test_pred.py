@@ -1,7 +1,6 @@
 
 import numpy as np
 from tensorflow.keras.models import load_model
-from tensorflow.keras.preprocessing import image
 import tensorflow as tf
 import matplotlib.pyplot as plt
 from tensorflow.keras.preprocessing import image
@@ -11,6 +10,21 @@ import cv2
 import seaborn as sns
 import os
 
+# 사진 하나만 넣을 경우
+'''
+test_image=image.load_img("../project/test/1L_test.jpg", target_size=(64,64))
+test_image=image.img_to_array(test_image)
+x_predict=np.expand_dims(test_image, axis=0)
+
+pred = model.predict(x_predict)
+pred1 = np.argmax(pred,axis=-1)
+
+print(pred)
+pred = []
+for i in pred1:
+    pred.append(uniq_labels[i])
+print('이 손의 뜻은? : ',pred)
+'''
 
 test_image=glob('../project/test/*.jpg')
 print(len(test_image))
@@ -63,4 +77,4 @@ for i in test_pred2 :
 print(result)
 
 
-# 값이 다르게 나온다.
+# 값이 다르게 나온다. 실패,,

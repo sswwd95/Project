@@ -108,10 +108,10 @@ plt.suptitle("Example of each sign", fontsize=20)
 
 from sklearn.model_selection import train_test_split
 x_train, x_test, y_train, y_test = train_test_split(
-    X, Y, test_size=0.1, random_state=42, stratify=Y)
+    X, Y, test_size=0.2, random_state=42, stratify=Y)
 
 x_train, x_val, y_train, y_val = train_test_split(
-    x_train, y_train, test_size=0.1, random_state=42
+    x_train, y_train, test_size=0.2, random_state=42
 )
 
 # x_train = x_train.reshape(-1,64,64,3)
@@ -123,19 +123,19 @@ from keras.layers import Conv2D, Dense, Dropout, Flatten,MaxPooling2D,BatchNorma
 from keras.models import Sequential
 
 model = Sequential()
-model.add(Conv2D(64, (3,3), input_shape=(64,64,3), activation='relu'))
+model.add(Conv2D(128, (3,3), input_shape=(64,64,3), activation='relu'))
+model.add(Dropout(0.2))
 model.add(MaxPooling2D(pool_size=(2, 2)))
-
 model.add(Conv2D(64, (3,3), activation='relu'))
 model.add(MaxPooling2D(pool_size=(2, 2)))
-
 model.add(Conv2D(64, (3,3), activation='relu'))
 model.add(MaxPooling2D(pool_size=(2, 2)))
-
+model.add(Conv2D(32, (3,3), activation='relu'))
 model.add(Flatten())
-model.add(Dense(128, activation='relu'))
+model.add(Dense(64, activation='relu'))
 model.add(Dropout(0.20))
 model.add(Dense(64, activation='relu'))
+model.add(Dense(32, activation='relu'))
 model.add(Dense(29, activation='softmax'))
 model.summary()
 
@@ -147,7 +147,7 @@ filepath = '../project/modelcp/cnn3_{val_loss:.3f}.hdf5'
 cp = ModelCheckpoint(filepath=filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='auto')
 
 model.compile(optimizer='adam', loss = 'categorical_crossentropy', metrics = ['accuracy'])
-history=model.fit(x_train, y_train, epochs = 1000,callbacks=[es,rl,cp], batch_size = 16, validation_data=(x_val,y_val))
+history=model.fit(x_train, y_train, epochs = 100,callbacks=[es,rl,cp], batch_size = 32, validation_data=(x_val,y_val))
 
 model.save('../project/h5/cnn3.hdf5')
 
@@ -173,23 +173,8 @@ plt.xlabel('epoch')
 plt.legend(['acc', 'val_acc', 'loss', 'val_loss'])
 plt.show()
 
-# Accuracy for test images: 94.431 %
-# Accuracy for evaluation images: 30.92 %
 
-# Accuracy for test images: 99.356 %
-# Accuracy for evaluation images: 24.023 %
+# Accuracy for test images: 99.983 %
+# Accuracy for evaluation images: 46.897 %
 
-# 에폭 20
-# Accuracy for test images: 99.598 %
-# Accuracy for evaluation images: 31.149 %
-
-# optimizer = rmsprop(lr=0.002)
-# Accuracy for test images: 99.977 %
-# Accuracy for evaluation images: 29.77 %
-
-#optimizer =rmsprop기본값
-# Accuracy for test images: 99.977 %
-# Accuracy for evaluation images: 30.115 %
-
-# Accuracy for test images: 100.0 %
-# Accuracy for evaluation images: 24.713 %
+# 학습한 데이터만 정답으로 인식한다.-> 과적합

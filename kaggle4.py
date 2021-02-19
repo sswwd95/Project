@@ -162,6 +162,43 @@ def create_model():
     
     model.compile(optimizer = 'adam', loss = keras.losses.categorical_crossentropy, metrics = ["accuracy"])
     model.summary()
+    '''
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #
+=================================================================
+conv2d (Conv2D)              (None, 64, 64, 16)        448
+_________________________________________________________________
+conv2d_1 (Conv2D)            (None, 64, 64, 32)        4640
+_________________________________________________________________
+max_pooling2d (MaxPooling2D) (None, 21, 21, 32)        0
+_________________________________________________________________
+conv2d_2 (Conv2D)            (None, 21, 21, 32)        9248
+_________________________________________________________________
+conv2d_3 (Conv2D)            (None, 21, 21, 64)        18496
+_________________________________________________________________
+max_pooling2d_1 (MaxPooling2 (None, 7, 7, 64)          0
+_________________________________________________________________
+conv2d_4 (Conv2D)            (None, 7, 7, 128)         73856
+_________________________________________________________________
+conv2d_5 (Conv2D)            (None, 7, 7, 256)         295168
+_________________________________________________________________
+max_pooling2d_2 (MaxPooling2 (None, 2, 2, 256)         0
+_________________________________________________________________
+batch_normalization (BatchNo (None, 2, 2, 256)         1024
+_________________________________________________________________
+flatten (Flatten)            (None, 1024)              0
+_________________________________________________________________
+dropout (Dropout)            (None, 1024)              0
+_________________________________________________________________
+dense (Dense)                (None, 512)               524800
+_________________________________________________________________
+dense_1 (Dense)              (None, 29)                14877
+=================================================================
+Total params: 942,557
+Trainable params: 942,045
+Non-trainable params: 512
+_________________________________________________________________
+'''
     
     return model
 
@@ -188,7 +225,7 @@ plt.xlabel('epoch')
 plt.ylabel('loss')
 plt.show()
 '''
-
+'''
 evaluate_metrics = model.evaluate(X_test, Y_test)
 print("\nEvaluation Accuracy = ", "{:.2f}%".format(evaluate_metrics[1]*100),"\nEvaluation loss = " ,"{:.6f}".format(evaluate_metrics[0]))
 
@@ -307,3 +344,4 @@ predict_url_image("https://www.signingsavvy.com/images/words/alphabet/2/o1.jpg")
 
 # D
 predict_url_image("https://www.signingsavvy.com/images/words/alphabet/2/d1.jpg")
+'''
