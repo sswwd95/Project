@@ -12,7 +12,7 @@ import seaborn as sns
 import os
 
 
-test_dir = "../project/test2"
+test_dir = "../project/test"
 
 def load_test_data():
     images = []
@@ -29,7 +29,7 @@ def load_test_data():
 
 test_images, test_img_names = load_test_data()
 
-model=load_model('../project/h5/cnn3.hdf5')
+model=load_model('../project/h5/gen.hdf5')
 
 # make predictions on an image and append it to the list (predictions).
 predictions = [model.predict_classes(image.reshape(-1,64,64,3))[0] for image in test_images]
@@ -84,3 +84,5 @@ for i in range(1,(row*col-1)):
     plot_image_1(predfigure, test_images[image_index], test_img_names[image_index], predictions[image_index], result[image_index], row, col, i)
     image_index = image_index + 1
 plt.show()
+
+

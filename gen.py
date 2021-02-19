@@ -1,12 +1,16 @@
 from PIL import Image
 import numpy as np
+np.random.seed(42)
 import tensorflow as tf
 import pandas as pd
 import os
+from tensorflow.keras.preprocessing import image
 import matplotlib.pyplot as plt
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Conv2D, Dropout, MaxPooling2D,Flatten
+import time
+start = time.time()
 
 train_gen = ImageDataGenerator(
     rescale=1./255, 
@@ -51,33 +55,49 @@ eval_data = eval_gen.flow_from_directory(
 classes = list(train_data.class_indices)
 print(classes)
 # ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'del', 'nothing', 'space']
+print(train_data[0])
 
-print(train_data[0][0].shape, val_data[0][0].shape)
+print(train_data[0][1].shape, val_data[0][0].shape)
 # Found 69600 images belonging to 29 classes.
 # Found 17400 images belonging to 29 classes.
 # Found 870 images belonging to 29 classes.
-
 # (32, 64, 64, 3) (32, 64, 64, 3)
+'''
+img = load_img("../project/test/1_test.jpg")
+x = img_to_array(img)
+x = x.reshape((1,) + x.shape)
+
+i = 0
+
+# 이 for는 무한으로 반복되기 때문에 우리가 원하는 반복횟수를 지정하여, 지정된 반복횟수가 되면 빠져나오도록 해야한다.
+for batch in train_data.flow_from_directory(x, batch_size=1, save_to_dir='../project/view', save_prefix='tri', save_format='jpg'):
+    i += 1
+    if i > 30: 
+        break
+'''
+# np.save('../project/npy/gen_train_x.npy', arr=train_gen[0][0])
+# np.save('../project/npy/gen_train_y.npy', arr=train_gen[0][1])
+# np.save('../project/npy/gen_val_x.npy', arr=val_data[0][0])
+# np.save('../project/npy/gen_val_x.npy', arr=val_data[0][1])
 
 from keras.layers import Conv2D, Dense, Dropout, Flatten,MaxPooling2D,BatchNormalization,Activation
 from keras.models import Sequential
 
 model = Sequential()
-model.add(Conv2D(75 , (3,3) , padding = 'same' , activation = 'relu' , input_shape = (28,28,1)))
-model.add(BatchNormalization())
-model.add(MaxPooling2D((2,2) ,padding = 'same'))
-model.add(Conv2D(50 , (3,3), padding = 'same' , activation = 'relu'))
+model.add(Conv2D(128, (3,3), input_shape=(64,64,3), activation='relu'))
 model.add(Dropout(0.2))
-model.add(BatchNormalization())
-model.add(MaxPooling2D((2,2) ,  padding = 'same'))
-model.add(Conv2D(25 , (3,3) , padding = 'same' , activation = 'relu'))
-model.add(BatchNormalization())
-model.add(MaxPooling2D((2,2) , padding = 'same'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Conv2D(64, (3,3), activation='relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Conv2D(64, (3,3), activation='relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Conv2D(32, (3,3), activation='relu'))
 model.add(Flatten())
-model.add(Dense(units = 512 , activation = 'relu'))
-model.add(Dropout(0.3))
-model.add(Dense(units = 24 , activation = 'softmax'))
-model.compile(optimizer = 'adam' , loss = 'categorical_crossentropy' , metrics = ['accuracy'])
+model.add(Dense(64, activation='relu'))
+model.add(Dropout(0.20))
+model.add(Dense(64, activation='relu'))
+model.add(Dense(32, activation='relu'))
+model.add(Dense(29, activation='softmax'))
 model.summary()
 
 from keras.optimizers import Adam,RMSprop
@@ -88,24 +108,81 @@ filepath = '../project/modelcp/gen_{val_loss:.3f}.hdf5'
 cp = ModelCheckpoint(filepath=filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='auto')
 
 model.compile(optimizer='adam', loss = 'categorical_crossentropy', metrics = ['accuracy'])
-history=model.fit(train_data, epochs = 5, callbacks=[es,rl,cp], batch_size = 64, validation_data=val_data)
+history=model.fit_generator(train_data, 
+                            steps_per_epoch=69600//64,
+                            epochs = 100, 
+                            callbacks=[es,rl,cp], 
+                            validation_data=val_data,
+                            validation_steps=17400//64)
 
 model.save('../project/h5/gen.hdf5')
 
 score = model.evaluate_generator(val_data)
 print('Accuracy for test images:', round(score[1]*100, 3), '%')
-# Accuracy for test images: 29.31 %
+# Accuracy for test images: 29.31 %                                   
+score = model.evaluate_generator(eval_data)
+print('Accuracy for evaluation images:', round(score[1]*100, 3), '%')
+
+print('작업 수행된 시간 : %f 초' % (time.time() - start))
 
 
-history_frame = pd.DataFrame(history.history)
-history_frame.loc[:, ['loss', 'val_loss']].plot()
-history_frame.loc[:, ['acc', 'val_acc']].plot();
+acc=history.history['accuracy']
+val_acc=history.history['val_accuracy']
+loss=history.history['loss']
+val_loss=history.history['val_loss']
 
-sample = np.array(Image.open("../project/test/A_test.jpg"))
-sample_fed = np.expand_dims(sample, 0)
-pred= model.predict(sample_fed)
-pred = classes[np.argmax(pred)]
-plt.imshow(sample)
-plt.title("Actual: A, Predicted: {}".format(pred))
-plt.axis('off')
+plt.plot(acc)
+plt.plot(val_acc)
+plt.plot(loss)
+plt.plot(val_loss)
+
+plt.title('loss & acc')
+plt.ylabel('loss, acc')
+plt.xlabel('epoch')
+
+plt.legend(['acc', 'val_acc', 'loss', 'val_loss'])
 plt.show()
+
+
+'''
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #
+=================================================================
+conv2d (Conv2D)              (None, 62, 62, 128)       3584
+_________________________________________________________________
+dropout (Dropout)            (None, 62, 62, 128)       0
+_________________________________________________________________
+max_pooling2d (MaxPooling2D) (None, 31, 31, 128)       0
+_________________________________________________________________
+conv2d_1 (Conv2D)            (None, 29, 29, 64)        73792
+_________________________________________________________________
+max_pooling2d_1 (MaxPooling2 (None, 14, 14, 64)        0
+_________________________________________________________________
+conv2d_2 (Conv2D)            (None, 12, 12, 64)        36928
+_________________________________________________________________
+max_pooling2d_2 (MaxPooling2 (None, 6, 6, 64)          0
+_________________________________________________________________
+conv2d_3 (Conv2D)            (None, 4, 4, 32)          18464
+_________________________________________________________________
+flatten (Flatten)            (None, 512)               0
+_________________________________________________________________
+dense (Dense)                (None, 64)                32832
+_________________________________________________________________
+dropout_1 (Dropout)          (None, 64)                0
+_________________________________________________________________
+dense_1 (Dense)              (None, 64)                4160
+_________________________________________________________________
+dense_2 (Dense)              (None, 32)                2080
+_________________________________________________________________
+dense_3 (Dense)              (None, 29)                957
+=================================================================
+Total params: 172,797
+Trainable params: 172,797
+Non-trainable params: 0
+_________________________________________________________________
+'''
+
+# optimizer = Adam
+# Accuracy for test images: 90.471 %
+# Accuracy for evaluation images: 46.667 %
+# 작업 수행된 시간 : 6943.168126 초
