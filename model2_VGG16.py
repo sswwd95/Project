@@ -157,3 +157,5 @@ Epoch 00006: val_loss did not improve from 0.06091
 Epoch 7/100
 1739/1740 [============================>.] - ETA: 0s - loss: 3.3077 - accuracy: 0.0653 
 '''
+
+
