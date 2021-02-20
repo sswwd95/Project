@@ -6,6 +6,9 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Conv2D, Flatten, MaxPooling2D, Dropout, BatchNormalization
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.utils import to_categorical
+import time
+np.random.seed(42)
+start = time.time()
 
 train_dir = "../project/asl-alphabet/asl_alphabet_train/asl_alphabet_train"
 eval_dir =  "../project/asl-alphabet-test"
@@ -50,6 +53,7 @@ if uniq_labels == sorted(os.listdir(eval_dir)):
 
 print(X_eval.shape, Y_eval.shape) #(870, 64, 64, 3) (870,)
 print(X_eval, Y_eval)
+
 '''
  [[0.7372549  0.7647059  0.8235294 ]
    [0.7529412  0.77254903 0.83137256]
@@ -105,13 +109,12 @@ plt.axis("off")
 plt.suptitle("Example of each sign", fontsize=20)
 # plt.show()
 '''
-
 from sklearn.model_selection import train_test_split
 x_train, x_test, y_train, y_test = train_test_split(
-    X, Y, test_size=0.2, random_state=42, stratify=Y)
+    X, Y, test_size=0.1, random_state=42, stratify=Y)
 
 x_train, x_val, y_train, y_val = train_test_split(
-    x_train, y_train, test_size=0.2, random_state=42
+    x_train, y_train, test_size=0.1, random_state=42
 )
 
 # x_train = x_train.reshape(-1,64,64,3)
@@ -125,11 +128,11 @@ from keras.models import Sequential
 model = Sequential()
 model.add(Conv2D(128, (3,3), input_shape=(64,64,3), activation='relu'))
 model.add(Dropout(0.2))
-model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(MaxPooling2D(pool_size=2))
 model.add(Conv2D(64, (3,3), activation='relu'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(MaxPooling2D(pool_size=2))
 model.add(Conv2D(64, (3,3), activation='relu'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(MaxPooling2D(pool_size=2))
 model.add(Conv2D(32, (3,3), activation='relu'))
 model.add(Flatten())
 model.add(Dense(64, activation='relu'))
@@ -143,23 +146,29 @@ from keras.optimizers import Adam,RMSprop
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau,ModelCheckpoint
 es=EarlyStopping(patience=20, verbose=1, monitor='val_loss',restore_best_weights = True)
 rl=ReduceLROnPlateau(patience=10, verbose=1, monitor='val_loss')
-filepath = '../project/modelcp/cnn3_{val_loss:.3f}.hdf5'
+filepath = '../project/modelcp/CNN_size_{val_loss:.3f}.hdf5'
 cp = ModelCheckpoint(filepath=filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='auto')
 
-model.compile(optimizer='adam', loss = 'categorical_crossentropy', metrics = ['accuracy'])
+model.compile(optimizer='rmsprop', loss = 'categorical_crossentropy', metrics = ['accuracy'])
 history=model.fit(x_train, y_train, epochs = 100,callbacks=[es,rl,cp], batch_size = 32, validation_data=(x_val,y_val))
 
-model.save('../project/h5/cnn3.hdf5')
+model.save('../project/h5/CNN_size.hdf5')
 
 results = model.evaluate(x = x_test, y = y_test, verbose = 0)
 print('Accuracy for test images:', round(results[1]*100, 3), '%')                                   
 results = model.evaluate(x = X_eval, y = Y_eval, verbose = 0)
 print('Accuracy for evaluation images:', round(results[1]*100, 3), '%')
+print('작업 수행된 시간 : %f 초' % (time.time() - start))
 
 acc=history.history['accuracy']
 val_acc=history.history['val_accuracy']
 loss=history.history['loss']
 val_loss=history.history['val_loss']
+
+print('acc : ', acc[-1])
+print('val_acc : ', val_acc)
+print('loss : ', loss)
+print('val_loss : ', val_loss)
 
 plt.plot(acc)
 plt.plot(val_acc)
@@ -178,3 +187,13 @@ plt.show()
 # Accuracy for evaluation images: 46.897 %
 
 # 학습한 데이터만 정답으로 인식한다.-> 과적합
+
+# rmsprop
+# Accuracy for test images: 99.966 %
+# Accuracy for evaluation images: 47.586 %
+# 작업 수행된 시간 : 1000.526890 초
+
+# size0.1
+# Accuracy for test images: 100.0 %
+# Accuracy for evaluation images: 41.724 %
+# 작업 수행된 시간 : 1334.955268 초

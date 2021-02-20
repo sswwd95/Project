@@ -10,9 +10,32 @@ from glob import glob
 import cv2
 import seaborn as sns
 import os
+from tensorflow.keras import utils
 
 
-test_dir = "../project/test"
+
+test_dir = "../project/test2"
+
+
+# def load_data(test_dir):
+#     images = []
+#     labels = []
+#     size = 64,64
+#     index = -1
+#     for folder in os.listdir(test_dir):
+#         index +=1
+#         for image in os.listdir(test_dir + "/" + folder): # 폴더 불러오기
+#             img = cv2.imread(test_dir + '/' + folder + '/' + image) # 이미지들 읽기
+#             img = cv2.resize(img, size) # 이미지 리사이즈
+#             images.append(img) # 이미지 리스트로 다 모아준다.
+#             labels.append(index) # 인덱스만 모아서 라벨로 리스트 만들어준다.
+    
+#     images = np.array(images)
+#     images = images.astype('float32')/255.0
+#     labels = utils.to_categorical(labels)
+#     return images, labels
+
+# test_images, test_img_names = load_data()
 
 def load_test_data():
     images = []
@@ -25,11 +48,13 @@ def load_test_data():
         names.append(image)
     images = np.array(images)
     images = images.astype('float32')/255.0
+    # names = utils.to_categorical(names)
+
     return images, names
 
 test_images, test_img_names = load_test_data()
 
-model=load_model('../project/h5/gen.hdf5')
+model=load_model('../project/h5/VGG16.hdf5')
 
 # make predictions on an image and append it to the list (predictions).
 predictions = [model.predict_classes(image.reshape(-1,64,64,3))[0] for image in test_images]
