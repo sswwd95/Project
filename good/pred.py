@@ -14,7 +14,7 @@ from tensorflow.keras import utils
 
 
 
-test_dir = "../project/test2"
+test_dir = "../project/test"
 
 
 # def load_data(test_dir):
@@ -54,7 +54,7 @@ def load_test_data():
 
 test_images, test_img_names = load_test_data()
 
-model=load_model('../project/h5/VGG16.hdf5')
+model=load_model('../project/h5/CNN_rms.hdf5')
 
 # make predictions on an image and append it to the list (predictions).
 predictions = [model.predict_classes(image.reshape(-1,64,64,3))[0] for image in test_images]

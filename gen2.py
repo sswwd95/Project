@@ -126,24 +126,19 @@ from keras.layers import Conv2D, Dense, Dropout, Flatten,MaxPooling2D,BatchNorma
 from keras.models import Sequential
 
 model = Sequential()
-model.add(Conv2D(64, 3, input_shape=(64,64,3), activation='relu'))
-# model.add(BatchNormalization())
+model.add(Conv2D(128, (3,3), input_shape=(64,64,3), activation='relu'))
 model.add(Dropout(0.2))
 model.add(MaxPooling2D(pool_size=2))
-model.add(Conv2D(64, 3, activation='relu'))
-# model.add(BatchNormalization())
-model.add(Dropout(0.2))
+model.add(Conv2D(64, (3,3), activation='relu'))
 model.add(MaxPooling2D(pool_size=2))
-model.add(Conv2D(128, 3, activation='relu'))
-# model.add(BatchNormalization())
-model.add(Dropout(0.2))
+model.add(Conv2D(64, (3,3), activation='relu'))
 model.add(MaxPooling2D(pool_size=2))
-
+model.add(Conv2D(32, (3,3), activation='relu'))
 model.add(Flatten())
-model.add(Dense(128, activation='relu'))
-model.add(Dropout(0.20))
-model.add(Dense(128, activation='relu'))
 model.add(Dense(64, activation='relu'))
+model.add(Dropout(0.20))
+model.add(Dense(64, activation='relu'))
+model.add(Dense(32, activation='relu'))
 model.add(Dense(29, activation='softmax'))
 model.summary()
 
@@ -151,14 +146,33 @@ from keras.optimizers import Adam,RMSprop
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau,ModelCheckpoint
 es=EarlyStopping(patience=20, verbose=1, monitor='val_loss',restore_best_weights = True)
 rl=ReduceLROnPlateau(patience=10, verbose=1, monitor='val_loss')
-filepath = '../project/modelcp/CNN_{val_loss:.3f}.hdf5'
+filepath = '../project/modelcp/gen3_{val_loss:.3f}.hdf5'
 cp = ModelCheckpoint(filepath=filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='auto')
 
-op = Adam(lr=0.001)
-model.compile(optimizer=op, loss = 'categorical_crossentropy', metrics = ['accuracy'])
-history=model.fit(x_train, y_train, epochs = 100,callbacks=[es,rl,cp], batch_size = 32, validation_data=(x_val,y_val))
+model.compile(optimizer='adam', loss = 'categorical_crossentropy', metrics = ['accuracy'])
 
-model.save('../project/h5/CNN.hdf5')
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+
+train_gen = ImageDataGenerator( 
+    horizontal_flip=True,
+    vertical_flip=True,
+    rotation_range=20,
+    zoom_range=0.2,
+    width_shift_range=0.1,
+    height_shift_range=0.1,
+    shear_range=0.2,
+    fill_mode='nearest',
+)
+
+train_gen.fit(x_train)
+
+history=model.fit_generator(train_gen.flow(x_train, y_train,batch_size=32), 
+                            epochs = 100,
+                            steps_per_epoch=x_train.shape[0]//64,
+                            callbacks=[es,rl,cp], 
+                            validation_data=(x_val,y_val))
+
+model.save('../project/h5/gen3.hdf5')
 
 results = model.evaluate(x = x_test, y = y_test, verbose = 0)
 print('Accuracy for test images:', round(results[1]*100, 3), '%')                                   
@@ -172,9 +186,9 @@ loss=history.history['loss']
 val_loss=history.history['val_loss']
 
 print('acc : ', acc[-1])
-print('val_acc : ', val_acc[-1])
-print('loss : ', loss[-1])
-print('val_loss : ', val_loss[-1])
+print('val_acc : ', val_acc)
+print('loss : ', loss)
+print('val_loss : ', val_loss)
 
 plt.plot(acc)
 plt.plot(val_acc)
@@ -204,20 +218,4 @@ plt.show()
 # Accuracy for evaluation images: 41.724 %
 # 작업 수행된 시간 : 1334.955268 초
 
-# batch
-# Accuracy for test images: 98.759 %
-# Accuracy for evaluation images: 24.943 %
-# 작업 수행된 시간 : 759.750206 초
-# acc :  0.9988789558410645
-# val_acc :  0.9876117706298828
-# loss :  0.005304587073624134
-# val_loss :  0.06209186464548111
-
-# CNN
-# Accuracy for test images: 100.0 %
-# Accuracy for evaluation images: 37.931 %
-# 작업 수행된 시간 : 1669.383363 초
-# acc :  0.9998013377189636
-# val_acc :  1.0
-# loss :  0.0005857538781128824
-# val_loss :  2.4526194465579465e-05
+# gen 추가
