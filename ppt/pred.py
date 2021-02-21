@@ -12,7 +12,7 @@ import seaborn as sns
 import os
 from tensorflow.keras.utils import to_categorical
 
-test_dir = "../project/word"
+test_dir = "../project/test3"
 
 def load_test_data():
     images = []
@@ -30,7 +30,7 @@ def load_test_data():
 test_images, test_img_names = load_test_data()
 print(test_images, test_img_names)
 
-model=load_model('../project/h5/ppt.hdf5')
+model=load_model('../project/h5/cnn2_rms.hdf5')
 
 predictions = [model.predict_classes(image.reshape(-1,64,64,3))[0] for image in test_images]
 
@@ -77,11 +77,10 @@ def plot_image_1(fig, image, label, prediction, predictions_label, row, col, ind
     return
 
 image_index = 0
-row = 1
-col = 5
-for i in range(row, col):
-    plot_image_1(predfigure, test_images[image_index], test_img_names[image_index],
-                 predictions[image_index], result[image_index], row, col, i)
+row = 5
+col = 6
+for i in range(1,(row*col-1)):
+    plot_image_1(predfigure, test_images[image_index], test_img_names[image_index], predictions[image_index], result[image_index], row, col, i)
     image_index = image_index + 1
 plt.show()
 

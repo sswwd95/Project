@@ -17,9 +17,9 @@ train_gen = ImageDataGenerator(
     horizontal_flip=True,
     vertical_flip=True,
     rotation_range=20,
-    zoom_range=0.2,
-    width_shift_range=0.1,
-    height_shift_range=0.1,
+    zoom_range=0.5,
+    width_shift_range=0.2,
+    height_shift_range=0.2,
     shear_range=0.2,
     fill_mode='nearest',
     validation_split=0.2
@@ -30,6 +30,8 @@ eval_gen = ImageDataGenerator(rescale=1./255)
 
 train_dir = "../project/asl-alphabet/asl_alphabet_train/asl_alphabet_train"
 eval_dir =  "../project/asl-alphabet-test"
+# eval_dir =  "../project/ASL"
+
 
 batch_size = 64
 train_data = train_gen.flow_from_directory(
@@ -77,11 +79,6 @@ for batch in train_data.flow_from_directory(x, batch_size=1, save_to_dir='../pro
     if i > 30: 
         break
 '''
-# np.save('../project/npy/gen_train_x.npy', arr=train_gen[0][0])
-# np.save('../project/npy/gen_train_y.npy', arr=train_gen[0][1])
-# np.save('../project/npy/gen_val_x.npy', arr=val_data[0][0])
-# np.save('../project/npy/gen_val_x.npy', arr=val_data[0][1])
-
 from keras.layers import Conv2D, Dense, Dropout, Flatten,MaxPooling2D,BatchNormalization,Activation
 from keras.models import Sequential
 
@@ -106,10 +103,10 @@ from keras.optimizers import Adam,RMSprop
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau,ModelCheckpoint
 es=EarlyStopping(patience=20, verbose=1, monitor='val_loss',restore_best_weights = True)
 rl=ReduceLROnPlateau(patience=10, verbose=1, monitor='val_loss')
-filepath = '../project/modelcp/gen2_{val_loss:.3f}.hdf5'
+filepath = '../project/modelcp/gen2_eval_{val_loss:.3f}.hdf5'
 cp = ModelCheckpoint(filepath=filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='auto')
 
-op = RMSprop(lr=0.001)
+op = Adam(lr=0.001)
 model.compile(optimizer=op, loss = 'categorical_crossentropy', metrics = ['accuracy'])
 history=model.fit_generator(train_data, 
                             steps_per_epoch=69600//64,
@@ -118,12 +115,10 @@ history=model.fit_generator(train_data,
                             validation_data=val_data,
                             validation_steps=10)
 
-model.save('../project/h5/gen2.hdf5')
+model.save('../project/h5/gen2_eval.hdf5')
 
 score = model.evaluate_generator(val_data)
 print('Accuracy for test images:', round(score[1]*100, 3), '%')
-# Accuracy for test images: 29.31 % 
-print('loss, acc', score)                                  
 score = model.evaluate_generator(eval_data)
 print('Accuracy for evaluation images:', round(score[1]*100, 3), '%')
 
@@ -134,6 +129,12 @@ acc=history.history['accuracy']
 val_acc=history.history['val_accuracy']
 loss=history.history['loss']
 val_loss=history.history['val_loss']
+
+print('acc : ', acc[-1])
+print('val_acc : ', val_acc)
+print('loss : ', loss)
+print('val_loss : ', val_loss)
+
 
 plt.plot(acc)
 plt.plot(val_acc)

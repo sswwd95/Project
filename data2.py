@@ -9,7 +9,7 @@ from tensorflow.keras.utils import to_categorical
 import time
 np.random.seed(42)
 
-train_dir = "../project/asl-alphabet/asl_alphabet_train/asl_alphabet_train"
+train_dir = "../project/asl-alphabet2/asl_alphabet_train/asl_alphabet_train"
 eval_dir =  "../project/asl-alphabet-test"
 
 def load_images(directory):
@@ -110,10 +110,10 @@ plt.suptitle("Example of each sign", fontsize=20)
 '''
 from sklearn.model_selection import train_test_split
 x_train, x_test, y_train, y_test = train_test_split(
-    X, Y, test_size=0.3, random_state=42, stratify=Y)
+    X, Y, test_size=0.1, random_state=42, stratify=Y)
 
 x_train, x_val, y_train, y_val = train_test_split(
-    x_train, y_train, test_size=0.3, random_state=42
+    x_train, y_train, test_size=0.1, random_state=42
 )
 
 # x_train = x_train.reshape(-1,64,64,3)
@@ -126,21 +126,18 @@ from keras.models import Sequential
 
 model = Sequential()
 model.add(Conv2D(64, 3, input_shape=(64,64,3), activation='relu'))
-model.add(Dropout(0.3))
+model.add(Dropout(0.2))
 model.add(MaxPooling2D(pool_size=2))
 model.add(Conv2D(64, 3, activation='relu'))
-model.add(Dropout(0.3))
+model.add(Dropout(0.2))
 model.add(MaxPooling2D(pool_size=2))
 model.add(Conv2D(128, 3, activation='relu'))
-model.add(Dropout(0.3))
-model.add(MaxPooling2D(pool_size=2))
-model.add(Conv2D(256, 3, activation='relu'))
-model.add(Dropout(0.3))
+model.add(Dropout(0.2))
 model.add(MaxPooling2D(pool_size=2))
 
 model.add(Flatten())
-model.add(Dense(512, activation='relu'))
-model.add(Dropout(0.3))
+model.add(Dense(128, activation='relu'))
+model.add(Dropout(0.2))
 model.add(Dense(29, activation='softmax'))
 model.summary()
 
@@ -148,16 +145,16 @@ from keras.optimizers import Adam,RMSprop,Adadelta,Nadam
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau,ModelCheckpoint
 es=EarlyStopping(patience=20, verbose=1, monitor='val_loss',restore_best_weights = True)
 rl=ReduceLROnPlateau(patience=10, verbose=1, monitor='val_loss')
-filepath = '../project/modelcp/ppt2_{val_loss:.3f}.hdf5'
+filepath = '../project/modelcp/data2_{val_loss:.3f}.hdf5'
 cp = ModelCheckpoint(filepath=filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='auto')
 
 start = time.time()
 
 op = Adam(lr=0.001)
 model.compile(optimizer=op, loss = 'categorical_crossentropy', metrics = ['accuracy'])
-history=model.fit(x_train, y_train, epochs = 100,callbacks=[es,rl,cp], batch_size = 64, validation_data=(x_val,y_val))
+history=model.fit(x_train, y_train, epochs = 100,callbacks=[es,rl,cp], batch_size = 32, validation_data=(x_val,y_val))
 
-model.save('../project/h5/ppt2.hdf5')
+model.save('../project/h5/data2.hdf5')
 
 results = model.evaluate(x = x_test, y = y_test, verbose = 0)
 print('Accuracy for test images:', round(results[1]*100, 3), '%')                                   
@@ -198,6 +195,11 @@ plt.show()
 # Accuracy for evaluation images: 47.586 %
 # 작업 수행된 시간 : 1000.526890 초
 
+# size0.1
+# Accuracy for test images: 100.0 %
+# Accuracy for evaluation images: 41.724 %
+# 작업 수행된 시간 : 1334.955268 초
+
 # batch
 # Accuracy for test images: 98.759 %
 # Accuracy for evaluation images: 24.943 %
@@ -206,6 +208,24 @@ plt.show()
 # val_acc :  0.9876117706298828
 # loss :  0.005304587073624134
 # val_loss :  0.06209186464548111
+
+# CNN
+# Accuracy for test images: 100.0 %
+# Accuracy for evaluation images: 37.931 %
+# 작업 수행된 시간 : 1669.383363 초
+# acc :  0.9998013377189636
+# val_acc :  1.0
+# loss :  0.0005857538781128824
+# val_loss :  2.4526194465579465e-05
+
+# 아담 0.001
+# ccuracy for test images: 99.977 %
+# Accuracy for evaluation images: 41.494 %
+# 작업 수행된 시간 : 1658.645096 초
+# acc :  0.9997304081916809
+# val_acc :  1.0
+# loss :  0.0013417231384664774
+# val_loss :  6.631348242081003e-06
 
 # RMSPROP
 # Accuracy for test images: 100.0 %
@@ -233,49 +253,3 @@ plt.show()
 # val_acc :  1.0
 # loss :  0.0006092878174968064
 # val_loss :  5.893501111131627e-06
-
-# adam 0.001
-# Accuracy for test images: 100.0 %
-# Accuracy for evaluation images: 41.494 %
-# 작업 수행된 시간 : 1455.701613 초
-# acc :  0.99967360496521
-# val_acc :  1.0
-# loss :  0.001632230938412249
-# val_loss :  7.840417310944758e-06
-
-# adam 0.001
-# size =0.3 , dropout=0.3
-# Accuracy for test images: 99.985 %
-# Accuracy for evaluation images: 46.322 %
-# 작업 수행된 시간 : 883.107388 초
-# acc :  0.999108612537384
-# val_acc :  0.99978107213974
-# loss :  0.002451071050018072
-# val_loss :  0.0010150223970413208 
-
-# 레이어 늘리기(ppt파일)
-# Accuracy for test images: 99.946 %
-# Accuracy for evaluation images: 52.299 %
-# 작업 수행된 시간 : 1037.638335 초
-# acc :  0.9994839429855347
-# val_acc :  0.9994526505470276
-# loss :  0.0017868331633508205
-# val_loss :  0.0022737295366823673
-
-#adam 0.0005
-# Accuracy for test images: 99.996 %
-# Accuracy for evaluation images: 51.954 %
-# 작업 수행된 시간 : 1142.264472 초
-# acc :  0.9998592734336853
-# val_acc :  0.9998905062675476
-# loss :  0.0004584683629218489
-# val_loss :  0.0002848122676368803
-
-# 사이즈 64*64, 아담 0.0001
-# Accuracy for test images: 99.981 %
-# Accuracy for evaluation images: 45.905 %
-# 작업 수행된 시간 : 1140.506302 초
-# acc :  0.9981468319892883
-# val_acc :  0.9998357892036438
-# loss :  0.004933896474540234
-# val_loss :  0.006093891803175211
