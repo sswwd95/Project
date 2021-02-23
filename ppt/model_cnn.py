@@ -24,7 +24,7 @@ def load_images(directory):
     X = np.array(X)
     Y = np.array(Y)
     return(X,Y)
-   
+
 uniq_labels = sorted(os.listdir(train_dir)) 
 X,Y = load_images(directory=train_dir)
 
@@ -46,6 +46,7 @@ x_train, x_val, y_train, y_val = train_test_split(
 print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
 # (69600, 64, 64, 3) (69600, 30) (17400, 64, 64, 3) (17400, 30)
 
+print(y_train)
 # 이미지 확인
 def print_images(image_list):
     n = int(len(image_list) / len(uniq_labels))
@@ -64,7 +65,8 @@ def print_images(image_list):
 y_train_in = y_train.argsort()
 y_train = y_train[y_train_in]
 x_train = x_train[y_train_in]
-
+print(y_train_in)
+print(y_train)
 
 # print_images(image_list = x_train)
 
@@ -86,7 +88,7 @@ X_train = X_train.astype('float32')/255.0
 X_test = X_test.astype('float32')/255.0
 X_eval = X_eval.astype('float32')/255.0
 
-
+'''
 from keras.layers import Conv2D, Dense, Dropout, Flatten,MaxPooling2D,BatchNormalization,Activation
 from keras.models import Sequential
 
@@ -109,7 +111,7 @@ model.add(Dense(512, activation='relu'))
 model.add(Dropout(0.3))
 model.add(Dense(29, activation='softmax'))
 model.summary()
-'''
+
 from keras.optimizers import Adam,RMSprop,Adadelta,Nadam
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau,ModelCheckpoint
 es=EarlyStopping(patience=20, verbose=1, monitor='val_loss',restore_best_weights = True)

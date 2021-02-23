@@ -33,6 +33,8 @@ print(test_images, test_img_names)
 model=load_model('../project/h5/ppt.hdf5')
 
 predictions = [model.predict_classes(image.reshape(-1,64,64,3))[0] for image in test_images]
+# predictions = [model.predict_classes(image.reshape(-1,64,64,3))for image in test_images]
+# [array([7], dtype=int64), array([4], dtype=int64), array([11], dtype=int64), array([15], dtype=int64)]
 
 # predictions  = model.predict(test_pred.reshape(-1,64,64,3))
 # [[0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 1. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.

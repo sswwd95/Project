@@ -37,7 +37,7 @@ print(X_eval.shape, Y_eval.shape) #(870, 64, 64, 3) (870,)
 
 from sklearn.model_selection import train_test_split
 x_train, x_test, y_train, y_test = train_test_split(
-    X, Y, test_size=0.2, random_state=42, stratify=Y)
+    X, Y, test_size=0.1, random_state=42, stratify=Y)
 
 x_train, x_val, y_train, y_val = train_test_split(
     x_train, y_train, test_size=0.2, random_state=42
@@ -62,12 +62,13 @@ def print_images(image_list):
         ax.axis('off')
     plt.show()
 
+
 y_train_in = y_train.argsort()
 y_train = y_train[y_train_in]
 x_train = x_train[y_train_in]
 
-# print_images(image_list = x_train)
-
+print_images(image_list = x_train)
+'''
 # print_images(image_list = X_eval)
 
 # a =0, b=1, c=3, d=4 ...
@@ -93,7 +94,7 @@ from tensorflow.keras.applications import VGG16
 
 model = Sequential()
 
-model.add(VGG16(weights='imagenet', include_top=False, input_shape=(64,64,3)))
+model.add(VGG16(weights='imagenet', include_top=False, input_shape=(128,128,3)))
 
 model.add(Flatten())
 
@@ -112,9 +113,9 @@ cp = ModelCheckpoint(filepath=filepath, monitor='val_loss', verbose=1, save_best
 
 start = time.time()
 
-op = SGD(lr=0.0001)
+op = SGD(lr=0.001)
 model.compile(optimizer=op, loss = 'categorical_crossentropy', metrics = ['accuracy'])
-history=model.fit(x_train, y_train, epochs = 100,callbacks=[es,rl,cp], batch_size = 32, validation_data=(x_val,y_val))
+history=model.fit(x_train, y_train, epochs = 1,callbacks=[es,rl,cp], batch_size = 64, validation_data=(x_val,y_val))
 
 model.save('../project/h5/VGG16_2.hdf5')
 
@@ -145,5 +146,22 @@ plt.xlabel('epoch')
 
 plt.legend(['acc', 'val_acc', 'loss', 'val_loss'])
 plt.show()
-
-
+'''
+#ADAM
+'''
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #
+=================================================================
+vgg16 (Functional)           (None, 2, 2, 512)         14714688
+_________________________________________________________________
+flatten (Flatten)            (None, 2048)              0
+_________________________________________________________________
+dense (Dense)                (None, 512)               1049088
+_________________________________________________________________
+dense_1 (Dense)              (None, 29)                14877
+=================================================================
+Total params: 15,778,653
+Trainable params: 15,778,653
+Non-trainable params: 0
+_________________________________________________________________
+'''

@@ -5,7 +5,7 @@ from time import time
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.optimizers import Adam, SGD, RMSprop
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Flatten
+from tensorflow.keras.layers import Dense, Flatten,Dropout
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 # %matplotlib inline
@@ -21,7 +21,7 @@ def load_images(directory):
     for idx, label in enumerate(uniq_labels):
         for file in os.listdir(directory +'/' + label):
             filepath = directory + '/' + label + '/' + file
-            image = cv2.resize(cv2.imread(filepath), (200,200))
+            image = cv2.resize(cv2.imread(filepath), (64,64))
             X.append(image)
             Y.append(idx)
     X = np.array(X).astype('float32')/255.
@@ -113,24 +113,95 @@ plt.suptitle("Example of each sign", fontsize=20)
 '''
 from sklearn.model_selection import train_test_split
 x_train, x_test, y_train, y_test = train_test_split(
-    X, Y, test_size=0.3, random_state=42, stratify=Y)
+    X, Y, test_size=0.2, random_state=42, stratify=Y)
 
 x_train, x_val, y_train, y_val = train_test_split(
-    x_train, y_train, test_size=0.3, random_state=42
+    x_train, y_train, test_size=0.2, random_state=42
 )
 
 
-from tensorflow.keras.applications import VGG16
+from tensorflow.keras.applications.vgg16 import VGG16
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Input
 
 model = Sequential()
 
-model.add(VGG16(weights='imagenet', include_top=False, input_shape=(200,200,3)))
-
+model.add(VGG16(weights='imagenet', include_top=False, input_shape=(64,64,3)))
+for layer in model.layers:
+     layer.trainable = False
 model.add(Flatten())
 
-model.add(Dense(512, activation='sigmoid'))
-
+model.add(Dense(512, activation='relu'))
+model.add(Dropout(0.3))
 model.add(Dense(29, activation='softmax'))
+
+model.summary()
+#model.trainable = True
+# 다시 훈련시킨다. 다시 훈련을 15,778,653번 한다는것. 가중치가 틀어진다. 가중치가 틀어지면 최적의 가중치 값을 받은게 소용없어짐.
+'''
+Layer (type)                 Output Shape              Param #
+=================================================================
+vgg16 (Functional)           (None, 2, 2, 512)         14714688
+_________________________________________________________________
+flatten (Flatten)            (None, 2048)              0
+_________________________________________________________________
+dense (Dense)                (None, 512)               1049088
+_________________________________________________________________
+dropout (Dropout)            (None, 512)               0
+_________________________________________________________________
+dense_1 (Dense)              (None, 29)                14877
+=================================================================
+Total params: 15,778,653
+Trainable params: 15,778,653
+Non-trainable params: 0 -> 훈련할수 없는 파라미터
+_________________________________________________________________
+'''
+# model.trainable = False
+# 이미지넷에서 얻은 학습된 값을 그대로 사용한다.
+# 만약 flatten 이후 dense만 있으면 덴스의 파라미터만 다 더해서 훈련가능한 파라미터.
+'''
+Layer (type)                 Output Shape              Param #
+=================================================================
+vgg16 (Functional)           (None, 2, 2, 512)         14714688
+_________________________________________________________________
+flatten (Flatten)            (None, 2048)              0
+_________________________________________________________________
+dense (Dense)                (None, 512)               1049088
+_________________________________________________________________
+dropout (Dropout)            (None, 512)               0
+_________________________________________________________________
+dense_1 (Dense)              (None, 29)                14877
+=================================================================
+Total params: 15,778,653
+Trainable params: 0
+Non-trainable params: 15,778,653
+_________________________________________________________________
+'''
+
+# for layer in model.layers:
+#      layer.trainable = False
+'''
+Model: "sequential"
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #
+=================================================================
+vgg16 (Functional)           (None, 2, 2, 512)         14714688
+_________________________________________________________________
+flatten (Flatten)            (None, 2048)              0
+_________________________________________________________________
+dense (Dense)                (None, 512)               1049088
+_________________________________________________________________
+dropout (Dropout)            (None, 512)               0
+_________________________________________________________________
+dense_1 (Dense)              (None, 29)                14877
+=================================================================
+Total params: 15,778,653
+Trainable params: 1,063,965
+Non-trainable params: 14,714,688
+_________________________________________________________________
+'''
+
+"""
 
 from keras.optimizers import Adam,RMSprop,Adadelta,Nadam,SGD
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau,ModelCheckpoint
@@ -141,9 +212,9 @@ cp = ModelCheckpoint(filepath=filepath, monitor='val_loss', verbose=1, save_best
 
 start = time.time()
 
-op = SGD(lr=0.0001)
+op = SGD(lr=0.01)
 model.compile(optimizer=op, loss = 'categorical_crossentropy', metrics = ['accuracy'])
-history=model.fit(x_train, y_train, epochs = 100,callbacks=[es,rl,cp], batch_size = 32, validation_split=0.2)
+history=model.fit(x_train, y_train, epochs = 100,callbacks=[es,rl,cp], batch_size = 64, validation_split=0.2)
 
 model.save('../project/h5/VGG16.hdf5')
 
@@ -225,3 +296,65 @@ Total params: 947,421
 Trainable params: 947,421
 Non-trainable params: 0
 '''
+
+# adam
+# Accuracy for test images: 98.41 %
+# 작업 수행된 시간 : 650.318738 초
+# Accuracy for evaluation images: 30.46 %
+# acc :  0.06817381829023361
+# val_acc :  0.07365705072879791
+# loss :  3.237339496612549
+# val_loss :  3.2303311824798584
+
+#adam 128
+# Accuracy for test images: 3.448 %
+# 작업 수행된 시간 : 4380.264797 초
+# Accuracy for evaluation images: 3.448 %
+# acc :  0.034600045531988144
+# val_acc :  0.034365471452474594
+# loss :  3.367187261581421
+# val_loss :  3.367766857147217
+'''
+Layer (type)                 Output Shape              Param #
+=================================================================
+vgg16 (Functional)           (None, 4, 4, 512)         14714688
+_________________________________________________________________
+flatten (Flatten)            (None, 8192)              0
+_________________________________________________________________
+dense (Dense)                (None, 512)               4194816
+_________________________________________________________________
+dense_1 (Dense)              (None, 29)                14877
+=================================================================
+Total params: 18,924,381
+Trainable params: 18,924,381
+Non-trainable params: 0
+_________________________________________________________________
+'''
+#sgd 128*128
+# Accuracy for test images: 99.989 %
+# 작업 수행된 시간 : 11293.462001 초
+# Accuracy for evaluation images: 44.713 %
+# acc :  1.0
+# val_acc :  0.9999101758003235
+# loss :  0.0021712803281843662
+# val_loss :  0.0027807685546576977
+
+# 기본모델
+# Layer (type)                 Output Shape              Param #
+# =================================================================
+# vgg16 (Functional)           (None, 4, 4, 512)         14714688
+# =================================================================
+# Total params: 14,714,688
+# Trainable params: 14,714,688
+# Non-trainable params: 0
+
+
+# sgd(0.01)
+# Accuracy for test images: 99.994 %
+# 작업 수행된 시간 : 1072.073220 초
+# Accuracy for evaluation images: 50.0 %
+# acc :  1.0
+# val_acc :  0.9999101758003235
+# loss :  3.87013606086839e-05
+# val_loss :  0.00016265589511021972
+"""

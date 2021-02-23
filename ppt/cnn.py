@@ -21,25 +21,11 @@ def load_images(directory):
             image = cv2.resize(cv2.imread(filepath), (64,64))
             X.append(image)
             Y.append(idx)
-    X = np.array(X).astype('float32')/255.
-    Y = np.array(Y).astype('float32')
-    Y = to_categorical(Y, num_classes=29)
-
+    X = np.array(X)
+    Y = np.array(Y)
     return(X,Y)
-'''
-print(X, Y)
-X =[[[[230   2   4]
-    [187   9   9]
-    [183  10  14]
-    ...
-    [190  17  23]
-    [188  17  20]
-    [212  12  15]]
 
-Y = [ 0  0  0 ... 28 28 28]
-'''
-   
-uniq_labels = sorted(os.listdir(train_dir)) # sorted() -> 정렬함수
+uniq_labels = sorted(os.listdir(train_dir)) 
 X,Y = load_images(directory=train_dir)
 
 print(X.shape, Y.shape) #(87000, 64, 64, 3) (87000,)
@@ -47,95 +33,74 @@ print(X.shape, Y.shape) #(87000, 64, 64, 3) (87000,)
 if uniq_labels == sorted(os.listdir(eval_dir)):
     X_eval, Y_eval = load_images(directory=eval_dir)
 
-# 트레인 폴더의 파일 리스트와 검증폴더의 파일 리스트가 같다면 트레인 폴더와 같게 x, y를 나눈다.
-
 print(X_eval.shape, Y_eval.shape) #(870, 64, 64, 3) (870,)
-# (291, 64, 64, 3) (291, 29)
 print(X_eval, Y_eval)
 
-'''
- [[0.7372549  0.7647059  0.8235294 ]
-   [0.7529412  0.77254903 0.83137256]
-   [0.74509805 0.7647059  0.8235294 ]
-   ...
-   [0.45490196 0.6117647  0.8784314 ]
-   [0.47058824 0.6392157  0.9019608 ]
-   [0.48235294 0.654902   0.90588236]]]] 
-
-[[1. 0. 0. ... 0. 0. 0.]
- [1. 0. 0. ... 0. 0. 0.]
- [1. 0. 0. ... 0. 0. 0.]
- ...
- [0. 0. 0. ... 0. 0. 1.]
- [0. 0. 0. ... 0. 0. 1.]
- [0. 0. 0. ... 0. 0. 1.]]
- '''
-
-print(X.shape, Y.shape) #(87000, 64, 64, 3) (87000,)
-print(" Max value of X: ",X.max())
-print(" Min value of X: ",X.min())
-print(" Shape of X: ",X.shape)
-
-print("\n Max value of Y: ",Y.max())
-print(" Min value of Y: ",Y.min())
-print(" Shape of Y: ",Y.shape)
-
-# Max value of X:  1.0
-#  Min value of X:  0.0
-#  Shape of X:  (87000, 64, 64, 3)
-
-#  Max value of Y:  1.0
-#  Min value of Y:  0.0
-#  Shape of Y:  (87000, 30)
-'''
-plt.figure(figsize=(24,8))
-# A
-plt.subplot(2,5,1)
-plt.title(Y[0].argmax())
-plt.imshow(X[0])
-plt.axis("off") # 선 없애는 것
-# B
-plt.subplot(2,5,2)
-plt.title(Y[4000].argmax())
-plt.imshow(X[4000])
-plt.axis("off")
-# C
-plt.subplot(2,5,3)
-plt.title(Y[7000].argmax())
-plt.imshow(X[7000])
-plt.axis("off")
-
-plt.suptitle("Example of each sign", fontsize=20)
-# plt.show()
-'''
 from sklearn.model_selection import train_test_split
 x_train, x_test, y_train, y_test = train_test_split(
-    X, Y, test_size=0.2, random_state=42)
-
-x_train, x_val, y_train, y_val = train_test_split(
-    x_train, y_train, test_size=0.2, random_state=42
-)
-
-# x_train = x_train.reshape(-1,64,64,3)
+    X, Y, test_size=0.2, random_state=42, stratify=Y)
 
 print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
 # (69600, 64, 64, 3) (69600, 30) (17400, 64, 64, 3) (17400, 30)
+print(y_train)
+# [ 0 24 25 ... 21  8 25]
+
+# 이미지 확인
+def print_images(image_list):
+    n = int(len(image_list) / len(uniq_labels))
+    cols = 8
+    rows = 4
+    fig = plt.figure(figsize = (24, 12))
+
+    for i in range(len(uniq_labels)):
+        ax = plt.subplot(rows, cols, i + 1)
+        plt.imshow(image_list[int(n*i)])
+        plt.title(uniq_labels[i])
+        ax.title.set_fontsize(20)
+        ax.axis('off')
+    plt.show()
+
+y_train_in = y_train.argsort()
+y_train = y_train[y_train_in]
+x_train = x_train[y_train_in]
+
+print(y_train)
+# [ 0  0  0 ... 28 28 28]
+# print_images(image_list = x_train)
+
+# print_images(image_list = X_eval)
+
+# a =0, b=1, c=3, d=4 ...
+from tensorflow.keras.utils import to_categorical
+y_train = to_categorical(y_train)
+y_test = to_categorical(y_test)
+Y_eval = to_categorical(Y_eval)
+
+print(y_train[0])
+# [1. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.
+#  0. 0. 0. 0. 0.]
+print(len(y_train[0])) #29
+
+# 데이터 전처리(0~1사이로)
+x_train = x_train.astype('float32')/255.0
+x_test = x_test.astype('float32')/255.0
+X_eval = X_eval.astype('float32')/255.0
 
 from keras.layers import Conv2D, Dense, Dropout, Flatten,MaxPooling2D,BatchNormalization,Activation
 from keras.models import Sequential
 
 model = Sequential()
 model.add(Conv2D(64, 3, input_shape=(64,64,3), activation='relu'))
-model.add(Dropout(0.3))
+model.add(Dropout(0.2))
 model.add(MaxPooling2D(pool_size=2))
 model.add(Conv2D(64, 3, activation='relu'))
-model.add(Dropout(0.3))
+model.add(Dropout(0.2))
 model.add(MaxPooling2D(pool_size=2))
 model.add(Conv2D(128, 3, activation='relu'))
-model.add(Dropout(0.3))
+model.add(Dropout(0.2))
 model.add(MaxPooling2D(pool_size=2))
 model.add(Conv2D(256, 3, activation='relu'))
-model.add(Dropout(0.3))
+model.add(Dropout(0.2))
 model.add(MaxPooling2D(pool_size=2))
 
 model.add(Flatten())
@@ -144,20 +109,20 @@ model.add(Dropout(0.3))
 model.add(Dense(29, activation='softmax'))
 model.summary()
 
-from keras.optimizers import Adam,RMSprop,Adadelta,Nadam
+from keras.optimizers import Adam,RMSprop,Adadelta,Nadam,SGD
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau,ModelCheckpoint
 es=EarlyStopping(patience=20, verbose=1, monitor='val_loss',restore_best_weights = True)
 rl=ReduceLROnPlateau(patience=10, verbose=1, monitor='val_loss')
-filepath = '../project/modelcp/128_{val_loss:.3f}.hdf5'
+filepath = '../project/modelcp/cnn_{val_loss:.3f}.hdf5'
 cp = ModelCheckpoint(filepath=filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='auto')
 
 start = time.time()
 
-op = Adam(lr=0.001)
+op = SGD(lr=0.01)
 model.compile(optimizer=op, loss = 'categorical_crossentropy', metrics = ['accuracy'])
-history=model.fit(x_train, y_train, epochs = 100,callbacks=[es,rl,cp], batch_size = 64, validation_data=(x_val,y_val))
+history=model.fit(x_train, y_train, epochs = 100,callbacks=[es,rl,cp], batch_size = 64, validation_split=0.2)
 
-model.save('../project/h5/128.hdf5')
+model.save('../project/h5/cnn.hdf5')
 
 results = model.evaluate(x = x_test, y = y_test, verbose = 0)
 print('Accuracy for test images:', round(results[1]*100, 3), '%')                                   
@@ -341,3 +306,112 @@ _______________________________
 # val_acc :  0.9998562932014465
 # loss :  0.00113090465310961
 # val_loss :  0.0006115080323070288
+
+# 커널사이즈 4 , 드롭아웃 0.2
+"""
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #
+=================================================================
+conv2d (Conv2D)              (None, 61, 61, 64)        3136
+_________________________________________________________________
+dropout (Dropout)            (None, 61, 61, 64)        0
+_________________________________________________________________
+max_pooling2d (MaxPooling2D) (None, 30, 30, 64)        0
+_________________________________________________________________
+conv2d_1 (Conv2D)            (None, 27, 27, 64)        65600
+_________________________________________________________________
+dropout_1 (Dropout)          (None, 27, 27, 64)        0
+_________________________________________________________________
+max_pooling2d_1 (MaxPooling2 (None, 13, 13, 64)        0
+_________________________________________________________________
+conv2d_2 (Conv2D)            (None, 10, 10, 128)       131200
+_________________________________________________________________
+dropout_2 (Dropout)          (None, 10, 10, 128)       0
+_________________________________________________________________
+max_pooling2d_2 (MaxPooling2 (None, 5, 5, 128)         0
+_________________________________________________________________
+conv2d_3 (Conv2D)            (None, 2, 2, 256)         524544
+_________________________________________________________________
+dropout_3 (Dropout)          (None, 2, 2, 256)         0
+_________________________________________________________________
+max_pooling2d_3 (MaxPooling2 (None, 1, 1, 256)         0
+_________________________________________________________________
+flatten (Flatten)            (None, 256)               0
+_________________________________________________________________
+dense (Dense)                (None, 512)               131584
+_________________________________________________________________
+dropout_4 (Dropout)          (None, 512)               0
+_________________________________________________________________
+dense_1 (Dense)              (None, 29)                14877
+=================================================================
+Total params: 870,941
+Trainable params: 870,941
+Non-trainable params: 0
+________________________________________________________________
+"""
+# Accuracy for test images: 77.557 %
+# Accuracy for evaluation images: 26.782 %
+# 작업 수행된 시간 : 249.377845 초
+# acc :  0.9998204112052917
+# val_acc :  0.13642241060733795
+# loss :  0.0005128177581354976
+# val_loss :  20.820009231567383
+
+# 커널사이즈 2
+# Accuracy for test images: 75.178 %
+# Accuracy for evaluation images: 16.092 %
+# 작업 수행된 시간 : 238.366156 초
+# acc :  0.9995689392089844
+# val_acc :  0.13785919547080994
+# loss :  0.0012007858604192734
+# val_loss :  22.6173095703125
+'''
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #
+=================================================================
+conv2d (Conv2D)              (None, 63, 63, 64)        832
+_________________________________________________________________
+dropout (Dropout)            (None, 63, 63, 64)        0
+_________________________________________________________________
+max_pooling2d (MaxPooling2D) (None, 31, 31, 64)        0
+_________________________________________________________________
+conv2d_1 (Conv2D)            (None, 30, 30, 64)        16448
+_________________________________________________________________
+dropout_1 (Dropout)          (None, 30, 30, 64)        0
+_________________________________________________________________
+max_pooling2d_1 (MaxPooling2 (None, 15, 15, 64)        0
+_________________________________________________________________
+conv2d_2 (Conv2D)            (None, 14, 14, 128)       32896
+_________________________________________________________________
+dropout_2 (Dropout)          (None, 14, 14, 128)       0
+_________________________________________________________________
+max_pooling2d_2 (MaxPooling2 (None, 7, 7, 128)         0
+_________________________________________________________________
+conv2d_3 (Conv2D)            (None, 6, 6, 256)         131328
+_________________________________________________________________
+dropout_3 (Dropout)          (None, 6, 6, 256)         0
+_________________________________________________________________
+max_pooling2d_3 (MaxPooling2 (None, 3, 3, 256)         0
+_________________________________________________________________
+flatten (Flatten)            (None, 2304)              0
+_________________________________________________________________
+dense (Dense)                (None, 512)               1180160
+_________________________________________________________________
+dropout_4 (Dropout)          (None, 512)               0
+_________________________________________________________________
+dense_1 (Dense)              (None, 29)                14877
+=================================================================
+Total params: 1,376,541
+Trainable params: 1,376,541
+Non-trainable params: 0
+_________________________________________________________________
+'''
+
+# SGD
+# Accuracy for test images: 21.408 %
+# Accuracy for evaluation images: 8.391 %
+# 작업 수행된 시간 : 240.328830 초
+# acc :  0.9685883522033691
+# val_acc :  0.1145833358168602
+# loss :  0.09268931299448013
+# val_loss :  12.239177703857422
