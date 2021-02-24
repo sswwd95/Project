@@ -130,12 +130,15 @@ model.add(VGG16(weights='imagenet', include_top=False, input_shape=(64,64,3)))
 for layer in model.layers:
      layer.trainable = False
 model.add(Flatten())
-
 model.add(Dense(512, activation='relu'))
 model.add(Dropout(0.3))
 model.add(Dense(29, activation='softmax'))
 
+model.add(VGG16(weights='imagenet', include_top=False, input_shape=(64,64,3)))
+for layer in model.layers:
+     layer.trainable = False
 model.summary()
+"""
 #model.trainable = True
 # 다시 훈련시킨다. 다시 훈련을 15,778,653번 한다는것. 가중치가 틀어진다. 가중치가 틀어지면 최적의 가중치 값을 받은게 소용없어짐.
 '''
@@ -159,24 +162,6 @@ _________________________________________________________________
 # model.trainable = False
 # 이미지넷에서 얻은 학습된 값을 그대로 사용한다.
 # 만약 flatten 이후 dense만 있으면 덴스의 파라미터만 다 더해서 훈련가능한 파라미터.
-'''
-Layer (type)                 Output Shape              Param #
-=================================================================
-vgg16 (Functional)           (None, 2, 2, 512)         14714688
-_________________________________________________________________
-flatten (Flatten)            (None, 2048)              0
-_________________________________________________________________
-dense (Dense)                (None, 512)               1049088
-_________________________________________________________________
-dropout (Dropout)            (None, 512)               0
-_________________________________________________________________
-dense_1 (Dense)              (None, 29)                14877
-=================================================================
-Total params: 15,778,653
-Trainable params: 0
-Non-trainable params: 15,778,653
-_________________________________________________________________
-'''
 
 # for layer in model.layers:
 #      layer.trainable = False
@@ -201,7 +186,6 @@ Non-trainable params: 14,714,688
 _________________________________________________________________
 '''
 
-"""
 
 from keras.optimizers import Adam,RMSprop,Adadelta,Nadam,SGD
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau,ModelCheckpoint
@@ -349,7 +333,7 @@ _________________________________________________________________
 # Non-trainable params: 0
 
 
-# sgd(0.01)
+# sgd(0.01) - trainable = True
 # Accuracy for test images: 99.994 %
 # 작업 수행된 시간 : 1072.073220 초
 # Accuracy for evaluation images: 50.0 %
@@ -357,4 +341,13 @@ _________________________________________________________________
 # val_acc :  0.9999101758003235
 # loss :  3.87013606086839e-05
 # val_loss :  0.00016265589511021972
+
+# sgd(0.01) - trainable = False
+# Accuracy for test images: 99.655 %
+# 작업 수행된 시간 : 1263.428663 초
+# Accuracy for evaluation images: 16.207 %
+# acc :  0.995195746421814
+# val_acc :  0.9965876340866089
+# loss :  0.03614778816699982
+# val_loss :  0.02695278823375702
 """
