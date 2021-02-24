@@ -109,7 +109,7 @@ model.add(Dropout(0.3))
 model.add(Dense(29, activation='softmax'))
 model.summary()
 
-from keras.optimizers import Adam,RMSprop,Adadelta,Nadam,SGD
+from keras.optimizers import Adam,RMSprop,Adadelta,Nadam,SGD,Adagrad
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau,ModelCheckpoint
 es=EarlyStopping(patience=20, verbose=1, monitor='val_loss',restore_best_weights = True)
 rl=ReduceLROnPlateau(patience=10, verbose=1, monitor='val_loss')
@@ -118,7 +118,7 @@ cp = ModelCheckpoint(filepath=filepath, monitor='val_loss', verbose=1, save_best
 
 start = time.time()
 
-op = SGD(lr=0.01)
+op = Adam(learning_rate=0.01)
 model.compile(optimizer=op, loss = 'categorical_crossentropy', metrics = ['accuracy'])
 history=model.fit(x_train, y_train, epochs = 100,callbacks=[es,rl,cp], batch_size = 64, validation_split=0.2)
 
