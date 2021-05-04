@@ -3,8 +3,8 @@ import tensorflow as tf
 import cv2, os #pip install opencv-python
 from tensorflow.keras.utils import to_categorical
 
-train_dir = "A:/study/asl_data/asl_alphabet_train/"
-test_dir =  "A:/study/asl_data/asl_alphabet_test/"
+train_dir = "A:/study/asl_data/asl_alphabet_train2/"
+test_dir =  "A:/study/asl_data/asl_alphabet_test2/"
 
 def load_images(directory):
     X = [] #image
@@ -12,7 +12,7 @@ def load_images(directory):
     for idx, label in enumerate(asl_labels): # idx = 0, 1, 2 ''' , label = A, B, C '''
         for file in os.listdir(directory +'/' + label):
             filepath = directory + '/' + label + '/' + file
-            image = cv2.resize(cv2.imread(filepath), (64,64))
+            image = cv2.resize(cv2.imread(filepath), (100,100))
             X.append(image) 
             Y.append(idx) 
     X = np.array(X).astype('float32')/255.
@@ -44,9 +44,14 @@ print(X_TEST.shape, Y_TEST.shape) #
 
 
 # # 트레인 폴더의 파일 리스트와 검증폴더의 파일 리스트가 같다면 트레인 폴더와 같게 x, y를 나눈다.
-np.save('A:/study/asl_data/npy/X_TRAIN.npy', arr=X)
-np.save('A:/study/asl_data/npy/Y_TRAIN.npy', arr=Y)
-np.save('A:/study/asl_data/npy/X_TEST.npy', arr=X_TEST)
-np.save('A:/study/asl_data/npy/Y_TEST.npy', arr=Y_TEST)
+np.save('A:/study/asl_data/npy/X_TRAIN2_100.npy', arr=X)
+np.save('A:/study/asl_data/npy/Y_TRAIN2_100.npy', arr=Y)
+np.save('A:/study/asl_data/npy/X_TEST2_100.npy', arr=X_TEST)
+np.save('A:/study/asl_data/npy/Y_TEST2_100.npy', arr=Y_TEST)
+
+
+# (157661, 128, 128, 3) (157661, 29)
+# (942, 128, 128, 3) (942, 29)
+# 메모리 터진다
 
 
