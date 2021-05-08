@@ -12,10 +12,10 @@ from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCh
 
 np.random.seed(42)
 
-X = np.load('A:/study/asl_data/npy/X_TRAIN_128.npy')
-Y = np.load('A:/study/asl_data/npy/Y_TRAIN_128.npy')
-X_TEST = np.load('A:/study/asl_data/npy/X_TEST_128.npy')
-Y_TEST = np.load('A:/study/asl_data/npy/Y_TEST_128.npy')
+X = np.load('A:/study/asl_data/npy/X_TRAIN2_100.npy')
+Y = np.load('A:/study/asl_data/npy/Y_TRAIN2_100.npy')
+X_TEST = np.load('A:/study/asl_data/npy/X_TEST2_100.npy')
+Y_TEST = np.load('A:/study/asl_data/npy/Y_TEST2_100.npy')
 
 print(X.shape, Y.shape) # (87000, 64, 64, 3) (87000, 29)
 print(X_TEST.shape, Y_TEST.shape) # (870, 64, 64, 3) (870, 29)
@@ -53,7 +53,7 @@ from keras.layers import Conv2D, Dense, Dropout, Flatten,MaxPooling2D,BatchNorma
 from keras.models import Sequential
 
 model = Sequential()
-model.add(Conv2D(32, 3, input_shape=(128,128,3), activation='relu'))
+model.add(Conv2D(32, 3, input_shape=(100,100,3), activation='relu'))
 model.add(MaxPooling2D(pool_size=2))
 model.add(Conv2D(64, 3, activation='relu'))
 model.add(MaxPooling2D(pool_size=2))
@@ -64,8 +64,8 @@ model.add(Dropout(0.2))
 model.add(MaxPooling2D(pool_size=2))
 
 model.add(Flatten())
-# model.add(Dense(512, activation='relu'))
-# model.add(Dropout(0.2))
+model.add(Dense(512, activation='relu'))
+model.add(Dropout(0.2))
 model.add(Dense(256, activation='relu'))
 model.add(Dropout(0.2))
 model.add(Dense(29, activation='softmax'))
@@ -77,21 +77,21 @@ start = datetime.now()
 from keras.optimizers import Adam,RMSprop,Adadelta,Nadam
 es=EarlyStopping(patience=8, verbose=1, monitor='val_loss',restore_best_weights = True)
 rl=ReduceLROnPlateau(vactor=0.2, patience=4, verbose=1, monitor='val_loss')
-filepath = 'A:/study/asl_data/h5/t_128_adam3.h5'
+filepath = 'A:/study/asl_data/h5/t2_100_adam3.h5'
 tb = TensorBoard(log_dir='A:/study/asl_data//graph/'+ start.strftime("%Y%m%d-%H%M%S") + "/",histogram_freq=0, write_graph=True, write_images=True)
 mc = ModelCheckpoint(filepath=filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='auto')
 
 op = Adam(lr=0.001)
 model.compile(optimizer=op, loss = 'categorical_crossentropy', metrics = ['accuracy'])
-history=model.fit(x_train, y_train, epochs = 100,callbacks=[es,rl,mc,tb], batch_size = 32,validation_split=0.2)
+# history=model.fit(x_train, y_train, epochs = 100,callbacks=[es,rl,mc,tb], batch_size = 32,validation_split=0.2)
 
-model.load_weights('A:/study/asl_data/h5/t_128_adam3.h5')
+model.load_weights('A:/study/asl_data/h5/t2_100_adam3.h5')
 
 results = model.evaluate(x_test, y_test,batch_size = 32)
 print('Accuracy for test images:', round(results[1]*100, 3), '%')                                   
 test_results = model.evaluate(X_TEST, Y_TEST,batch_size = 32)
 print('Accuracy for evaluation images:', round(test_results[1]*100, 3), '%')
-end = datetime.now()                                                                            
+end = datetime.now()
 time = end - start
 print("작업 시간 : " , time)  
 

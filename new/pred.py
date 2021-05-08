@@ -30,7 +30,7 @@ def load_test_data():
 test_images, test_img_names = load_test_data()
 print(test_images, test_img_names)
 
-model=load_model('A:/study/asl_data/h5/adam_4.h5')
+model=load_model('A:/study/asl_data/h5/t_150_adam.h5')
 
 predictions = [model.predict_classes(image.reshape(-1,64,64,3))[0] for image in test_images]
 # predictions = [model.predict_classes(image.reshape(-1,64,64,3))for image in test_images]

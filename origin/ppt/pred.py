@@ -80,7 +80,11 @@ image_index = 0
 row = 5
 col = 6
 for i in range(1,(row*col-1)):
-    plot_image_1(predfigure, test_images[image_index], test_img_names[image_index], predictions[image_index], result[image_index], row, col, i)
+    plot_image_1(predfigure, test_images[image_index], 
+                test_img_names[image_index], 
+                predictions[image_index], 
+                result[image_index], 
+                row, col, i)
     image_index = image_index + 1
 plt.show()
 
