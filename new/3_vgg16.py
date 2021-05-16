@@ -12,13 +12,13 @@ from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCh
 
 np.random.seed(42)
 
-X = np.load('A:/study/asl_data/npy/X_TRAIN2_100.npy')
-Y = np.load('A:/study/asl_data/npy/Y_TRAIN2_100.npy')
-X_TEST = np.load('A:/study/asl_data/npy/X_TEST2_100.npy')
-Y_TEST = np.load('A:/study/asl_data/npy/Y_TEST2_100.npy')
+X = np.load('A:/study/asl_data/npy/X_TRAIN3_100.npy')
+Y = np.load('A:/study/asl_data/npy/Y_TRAIN3_100.npy')
+X_TEST = np.load('A:/study/asl_data/npy/X_TEST3_100.npy')
+Y_TEST = np.load('A:/study/asl_data/npy/Y_TEST3_100.npy')
 
-print(X.shape, Y.shape) # (87000, 64, 64, 3) (87000, 29)
-print(X_TEST.shape, Y_TEST.shape) # (870, 64, 64, 3) (870, 29)
+print(X.shape, Y.shape) # (157661, 100, 100, 3) (157661, 29)
+print(X_TEST.shape, Y_TEST.shape) # (942, 100, 100, 3) (942, 29) 
 
 '''
 plt.figure(figsize=(24,8))
@@ -51,23 +51,16 @@ print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
 
 from keras.layers import Conv2D, Dense, Dropout, Flatten,MaxPooling2D,BatchNormalization,Activation
 from keras.models import Sequential
+from tensorflow.keras.applications.vgg16 import VGG16
 
 model = Sequential()
-model.add(Conv2D(32, 3, input_shape=(100,100,3), activation='relu'))
-model.add(MaxPooling2D(pool_size=2))
-model.add(Conv2D(64, 3, activation='relu'))
-model.add(MaxPooling2D(pool_size=2))
-model.add(Conv2D(128, 3, activation='relu'))
-model.add(MaxPooling2D(pool_size=2))
-model.add(Conv2D(256, 3, activation='relu'))
-model.add(Dropout(0.2))
-model.add(MaxPooling2D(pool_size=2))
 
+model.add(VGG16(weights='imagenet', include_top=False, input_shape=(100,100,3)))
+for layer in model.layers:
+     layer.trainable = False
 model.add(Flatten())
 model.add(Dense(512, activation='relu'))
-model.add(Dropout(0.2))
-model.add(Dense(256, activation='relu'))
-model.add(Dropout(0.2))
+model.add(Dropout(0.3))
 model.add(Dense(29, activation='softmax'))
 model.summary()
 
@@ -83,7 +76,7 @@ mc = ModelCheckpoint(filepath=filepath, monitor='val_loss', verbose=1, save_best
 
 op = Adam(lr=0.001)
 model.compile(optimizer=op, loss = 'categorical_crossentropy', metrics = ['accuracy'])
-# history=model.fit(x_train, y_train, epochs = 100,callbacks=[es,rl,mc,tb], batch_size = 32,validation_split=0.2)
+history=model.fit(x_train, y_train, epochs = 1000,callbacks=[es,rl,mc,tb], batch_size = 32,validation_split=0.2)
 
 model.load_weights('A:/study/asl_data/h5/t2_100_adam3.h5')
 
@@ -171,3 +164,9 @@ print("작업 시간 : " , time)
 # 30/30 [==============================] - 0s 6ms/step - loss: 4.6523 - accuracy: 0.3758
 # Accuracy for evaluation images: 37.58 %
 # 작업 시간 :  0:00:22.854229
+
+
+# X_TRAIN3_100.npy
+# 30/30 [==============================] - 1s 17ms/step - loss: 9.0556 - accuracy: 0.2898
+# Accuracy for evaluation images: 28.981 %
+# 작업 시간 :  0:20:05.439588
