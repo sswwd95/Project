@@ -78,15 +78,15 @@ start = datetime.now()
 from keras.optimizers import Adam,RMSprop,Adadelta,Nadam
 es=EarlyStopping(patience=8, verbose=1, monitor='val_loss',restore_best_weights = True)
 rl=ReduceLROnPlateau(vactor=0.2, patience=4, verbose=1, monitor='val_loss')
-filepath = 'A:/study/asl_data/h5/vgg16_64_sgd2_TRUE.h5'
-tb = TensorBoard(log_dir='A:/study/asl_data//graph/'+ 'vgg16_64_sgd2_TRUE'+ "/",histogram_freq=0, write_graph=True, write_images=True)
+filepath = 'A:/study/asl_data/h5/vgg16_64_sgd2_false.h5'
+tb = TensorBoard(log_dir='A:/study/asl_data//graph/'+ 'vgg16_64_sgd2_false'+ "/",histogram_freq=0, write_graph=True, write_images=True)
 mc = ModelCheckpoint(filepath=filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='auto')
 
 op = SGD(lr=0.01)
 model.compile(optimizer=op, loss = 'categorical_crossentropy', metrics = ['accuracy'])
 history=model.fit(x_train, y_train, epochs = 1000,callbacks=[es,rl,mc,tb], batch_size = 32,validation_split=0.2)
 
-model.load_weights('A:/study/asl_data/h5/vgg16_64_sgd2_TRUE.h5')
+model.load_weights('A:/study/asl_data/h5/vgg16_64_sgd2_false.h5')
 
 results = model.evaluate(x_test, y_test,batch_size = 32)
 print('Accuracy for test images:', round(results[1]*100, 3), '%')                                   
@@ -118,7 +118,26 @@ plt.xlabel('epoch')
 plt.legend(['acc', 'val_acc', 'loss', 'val_loss'])
 plt.show()
 
-
+# SGD(0.01) : trainable = True
 # Accuracy for test images: 100.0 %
 # Accuracy for evaluation images: 51.264 %
 # 작업 시간 :  0:18:46.142395
+
+# SGD(0.01) : trainable = False
+# Accuracy for test images: 99.931 %
+# Accuracy for evaluation images: 15.862 %
+# 작업 시간 :  0:19:18.760856
+# acc :  0.9990122318267822
+# val_acc :  0.9987068772315979
+# loss :  0.013599852100014687
+# val_loss :  0.009836621582508087
+
+# adam3
+
+# rmsprop3
+
+# adadelta3
+
+# nadam3
+
+# sgd2

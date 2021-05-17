@@ -8,6 +8,8 @@ from tensorflow.keras.preprocessing import image
 from tensorflow.keras.utils import to_categorical
 from datetime import datetime
 
+from tensorflow.python.keras.optimizer_v2 import rmsprop
+
 np.random.seed(42)
 
 X = np.load('A:/study/asl_data/npy/X_TRAIN_64.npy')
@@ -93,15 +95,15 @@ from keras.callbacks import EarlyStopping, ReduceLROnPlateau,ModelCheckpoint, Te
 
 es=EarlyStopping(patience=20, verbose=1, monitor='val_loss',restore_best_weights = True)
 rl=ReduceLROnPlateau(patience=10, verbose=1, monitor='val_loss')
-filepath = 'A:/study/asl_data/h5/CNN_64_adam3.h5'
+filepath = 'A:/study/asl_data/h5/CNN_64_RMS3.h5'
 mc = ModelCheckpoint(filepath=filepath, monitor='val_loss', 
                     verbose=1, save_best_only=True, mode='auto')
-op = Adam(lr=0.001)
+op = RMSprop(lr=0.001)
 model.compile(optimizer=op, loss = 'categorical_crossentropy', metrics = ['accuracy'])
 history=model.fit(x_train, y_train, epochs = 1000,callbacks=[es,rl,mc], 
                   batch_size = 32, validation_data=(x_val,y_val))
 
-model.save('A:/study/asl_data/h5/128.CNN_64_adam3.h5')
+model.save('A:/study/asl_data/h5/CNN_64_RMS3.h5')
 
 results = model.evaluate(x = x_test, y = y_test, verbose = 0)
 print('Accuracy for test images:', round(results[1]*100, 3), '%')                                   
@@ -134,9 +136,35 @@ plt.xlabel('epoch')
 plt.legend(['acc', 'val_acc', 'loss', 'val_loss'])
 plt.show()
 
-# 128?
+# 128,128
 # Epoch 00083: val_loss did not improve from 0.00087
 # Epoch 00083: early stopping
 # Accuracy for test images: 99.989 %
 # Accuracy for evaluation images: 47.931 %
 # 작업 시간 :  1:50:13.548681
+#==========================================================
+# 64,64 adam3
+# Accuracy for test images: 99.971 %
+# Accuracy for evaluation images: 54.713 %
+# 작업 시간 :  0:14:48.028487
+# acc :  0.9996767044067383
+# val_acc :  0.9997126460075378
+# loss :  0.002292361343279481
+# val_loss :  0.0012665786780416965
+
+
+# rmsprop3
+# Accuracy for test images: 99.989 %
+# Accuracy for evaluation images: 54.713 %
+# 작업 시간 :  0:20:21.860312
+# acc :  0.9992636442184448
+# val_acc :  0.9998562932014465
+# loss :  0.01449055690318346
+# val_loss :  0.00051312759751454
+
+# adadelta3
+
+# nadam3
+
+# sgd2
+
