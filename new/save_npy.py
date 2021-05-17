@@ -3,8 +3,8 @@ import tensorflow as tf
 import cv2, os #pip install opencv-python
 from tensorflow.keras.utils import to_categorical
 
-train_dir = "A:/study/asl_data/asl_alphabet_train2/"
-test_dir =  "A:/study/asl_data/asl_alphabet_test2/"
+train_dir = "A:/study/asl_data/asl_alphabet_train/"
+test_dir =  "A:/study/asl_data/asl_alphabet_test/"
 
 def load_images(directory):
     X = [] #image
@@ -12,7 +12,7 @@ def load_images(directory):
     for idx, label in enumerate(asl_labels): # idx = 0, 1, 2 ''' , label = A, B, C '''
         for file in os.listdir(directory +'/' + label):
             filepath = directory + '/' + label + '/' + file
-            image = cv2.resize(cv2.imread(filepath), (100,100))
+            image = cv2.resize(cv2.imread(filepath), (128,128))
             X.append(image) 
             Y.append(idx) 
     X = np.array(X).astype('float32')/255.

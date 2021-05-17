@@ -12,10 +12,10 @@ from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCh
 
 np.random.seed(42)
 
-X = np.load('A:/study/asl_data/npy/X_TRAIN3_100.npy')
-Y = np.load('A:/study/asl_data/npy/Y_TRAIN3_100.npy')
-X_TEST = np.load('A:/study/asl_data/npy/X_TEST3_100.npy')
-Y_TEST = np.load('A:/study/asl_data/npy/Y_TEST3_100.npy')
+X = np.load('A:/study/asl_data/npy/X_TRAIN_128.npy')
+Y = np.load('A:/study/asl_data/npy/Y_TRAIN_128.npy')
+X_TEST = np.load('A:/study/asl_data/npy/X_TEST_128.npy')
+Y_TEST = np.load('A:/study/asl_data/npy/Y_TEST_128.npy')
 
 print(X.shape, Y.shape) # (157661, 100, 100, 3) (157661, 29)
 print(X_TEST.shape, Y_TEST.shape) # (942, 100, 100, 3) (942, 29) 
@@ -55,7 +55,7 @@ from tensorflow.keras.applications.vgg16 import VGG16
 
 model = Sequential()
 
-model.add(VGG16(weights='imagenet', include_top=False, input_shape=(100,100,3)))
+model.add(VGG16(weights='imagenet', include_top=False, input_shape=(128,128,3)))
 for layer in model.layers:
      layer.trainable = False
 model.add(Flatten())
@@ -70,15 +70,15 @@ start = datetime.now()
 from keras.optimizers import Adam,RMSprop,Adadelta,Nadam
 es=EarlyStopping(patience=8, verbose=1, monitor='val_loss',restore_best_weights = True)
 rl=ReduceLROnPlateau(vactor=0.2, patience=4, verbose=1, monitor='val_loss')
-filepath = 'A:/study/asl_data/h5/t2_100_adam3.h5'
-tb = TensorBoard(log_dir='A:/study/asl_data//graph/'+ start.strftime("%Y%m%d-%H%M%S") + "/",histogram_freq=0, write_graph=True, write_images=True)
+filepath = 'A:/study/asl_data/h5/t_128_adam3_vgg16.h5'
+tb = TensorBoard(log_dir='A:/study/asl_data//graph/'+ 't_128_adam3_vgg16'+ "/",histogram_freq=0, write_graph=True, write_images=True)
 mc = ModelCheckpoint(filepath=filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='auto')
 
 op = Adam(lr=0.001)
 model.compile(optimizer=op, loss = 'categorical_crossentropy', metrics = ['accuracy'])
 history=model.fit(x_train, y_train, epochs = 1000,callbacks=[es,rl,mc,tb], batch_size = 32,validation_split=0.2)
 
-model.load_weights('A:/study/asl_data/h5/t2_100_adam3.h5')
+model.load_weights('A:/study/asl_data/h5/t_128_adam3_vgg16.h5')
 
 results = model.evaluate(x_test, y_test,batch_size = 32)
 print('Accuracy for test images:', round(results[1]*100, 3), '%')                                   
@@ -170,3 +170,10 @@ print("작업 시간 : " , time)
 # 30/30 [==============================] - 1s 17ms/step - loss: 9.0556 - accuracy: 0.2898
 # Accuracy for evaluation images: 28.981 %
 # 작업 시간 :  0:20:05.439588
+
+# (87000, 128, 128, 3) (87000, 29)
+# (870, 128, 128, 3) (870, 29)
+# 128, 128
+# 28/28 [==============================] - 1s 22ms/step - loss: 26.5538 - accuracy: 0.2517
+# Accuracy for evaluation images: 25.172 %
+# 작업 시간 :  0:15:06.287473
