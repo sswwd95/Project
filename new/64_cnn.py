@@ -95,15 +95,15 @@ from keras.callbacks import EarlyStopping, ReduceLROnPlateau,ModelCheckpoint, Te
 
 es=EarlyStopping(patience=20, verbose=1, monitor='val_loss',restore_best_weights = True)
 rl=ReduceLROnPlateau(patience=10, verbose=1, monitor='val_loss')
-filepath = 'A:/study/asl_data/h5/CNN_64_RMS3.h5'
+filepath = 'A:/study/asl_data/h5/CNN_64_DEL3.h5'
 mc = ModelCheckpoint(filepath=filepath, monitor='val_loss', 
                     verbose=1, save_best_only=True, mode='auto')
-op = RMSprop(lr=0.001)
+op = Adadelta(lr=0.001)
 model.compile(optimizer=op, loss = 'categorical_crossentropy', metrics = ['accuracy'])
 history=model.fit(x_train, y_train, epochs = 1000,callbacks=[es,rl,mc], 
                   batch_size = 32, validation_data=(x_val,y_val))
 
-model.save('A:/study/asl_data/h5/CNN_64_RMS3.h5')
+model.save('A:/study/asl_data/h5/CNN_64_DEL3.h5')
 
 results = model.evaluate(x = x_test, y = y_test, verbose = 0)
 print('Accuracy for test images:', round(results[1]*100, 3), '%')                                   
