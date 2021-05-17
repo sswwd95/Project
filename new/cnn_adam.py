@@ -108,7 +108,7 @@ results = model.evaluate(x = x_test, y = y_test, verbose = 0)
 print('Accuracy for test images:', round(results[1]*100, 3), '%')                                   
 results = model.evaluate(x = X_TEST, y = Y_TEST, verbose = 0)
 print('Accuracy for evaluation images:', round(results[1]*100, 3), '%')
-print('작업 수행된 시간 : %f 초' % (time.time() - start))
+
 end = datetime.now()
 time = end - start
 print("작업 시간 : " , time)  
