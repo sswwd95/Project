@@ -9,13 +9,14 @@ from tensorflow.keras.preprocessing import image
 from tensorflow.keras.utils import to_categorical
 from datetime import datetime
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint, TensorBoard
+from tensorflow.python.keras.optimizer_v2.gradient_descent import SGD
 
 np.random.seed(42)
 
-X = np.load('A:/study/asl_data/npy/X_TRAIN_128.npy')
-Y = np.load('A:/study/asl_data/npy/Y_TRAIN_128.npy')
-X_TEST = np.load('A:/study/asl_data/npy/X_TEST_128.npy')
-Y_TEST = np.load('A:/study/asl_data/npy/Y_TEST_128.npy')
+X = np.load('A:/study/asl_data/npy/X_TRAIN_64.npy')
+Y = np.load('A:/study/asl_data/npy/Y_TRAIN_64.npy')
+X_TEST = np.load('A:/study/asl_data/npy/X_TEST_64.npy')
+Y_TEST = np.load('A:/study/asl_data/npy/Y_TEST_64.npy')
 
 print(X.shape, Y.shape) # (157661, 100, 100, 3) (157661, 29)
 print(X_TEST.shape, Y_TEST.shape) # (942, 100, 100, 3) (942, 29) 
@@ -44,7 +45,7 @@ plt.show()
 
 from sklearn.model_selection import train_test_split
 x_train, x_test, y_train, y_test = train_test_split(
-    X, Y, test_size=0.2, random_state=42)
+    X, Y, test_size=0.2, random_state=42, stratify = Y)
 
 print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
 # (69600, 64, 64, 3) (69600, 29) (17400, 64, 64, 3) (17400, 29)
@@ -55,30 +56,36 @@ from tensorflow.keras.applications.vgg16 import VGG16
 
 model = Sequential()
 
-model.add(VGG16(weights='imagenet', include_top=False, input_shape=(128,128,3)))
-for layer in model.layers:
-     layer.trainable = False
+model.add(VGG16(weights='imagenet', include_top=False, input_shape=(64,64,3)))
+# for layer in model.layers:
+#      layer.trainable = False
 model.add(Flatten())
 model.add(Dense(512, activation='relu'))
 model.add(Dropout(0.3))
 model.add(Dense(29, activation='softmax'))
 model.summary()
 
+model.add(VGG16(weights='imagenet', include_top=False, input_shape=(64,64,3)))
+model.add(Flatten())
+model.add(Dense(512, activation='relu'))
+model.add(Dropout(0.3))
+model.add(Dense(29, activation='softmax'))
+model.summary()
 
 start = datetime.now()
 
 from keras.optimizers import Adam,RMSprop,Adadelta,Nadam
 es=EarlyStopping(patience=8, verbose=1, monitor='val_loss',restore_best_weights = True)
 rl=ReduceLROnPlateau(vactor=0.2, patience=4, verbose=1, monitor='val_loss')
-filepath = 'A:/study/asl_data/h5/t_128_adam3_vgg16.h5'
-tb = TensorBoard(log_dir='A:/study/asl_data//graph/'+ 't_128_adam3_vgg16'+ "/",histogram_freq=0, write_graph=True, write_images=True)
+filepath = 'A:/study/asl_data/h5/vgg16_64_sgd2_TRUE.h5'
+tb = TensorBoard(log_dir='A:/study/asl_data//graph/'+ 'vgg16_64_sgd2_TRUE'+ "/",histogram_freq=0, write_graph=True, write_images=True)
 mc = ModelCheckpoint(filepath=filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='auto')
 
-op = Adam(lr=0.001)
+op = SGD(lr=0.01)
 model.compile(optimizer=op, loss = 'categorical_crossentropy', metrics = ['accuracy'])
 history=model.fit(x_train, y_train, epochs = 1000,callbacks=[es,rl,mc,tb], batch_size = 32,validation_split=0.2)
 
-model.load_weights('A:/study/asl_data/h5/t_128_adam3_vgg16.h5')
+model.load_weights('A:/study/asl_data/h5/vgg16_64_sgd2_TRUE.h5')
 
 results = model.evaluate(x_test, y_test,batch_size = 32)
 print('Accuracy for test images:', round(results[1]*100, 3), '%')                                   
@@ -177,3 +184,12 @@ print("작업 시간 : " , time)
 # 28/28 [==============================] - 1s 22ms/step - loss: 26.5538 - accuracy: 0.2517
 # Accuracy for evaluation images: 25.172 %
 # 작업 시간 :  0:15:06.287473
+
+# 28/28 [==============================] - 1s 22ms/step - loss: 6.9608 - accuracy: 0.2759
+# Accuracy for evaluation images: 27.586 %
+# 작업 시간 :  0:28:54.056406
+
+# Accuracy for test images: 100.0 %
+# 28/28 [==============================] - 0s 13ms/step - loss: 4.9974 - accuracy: 0.5126
+# Accuracy for evaluation images: 51.264 %
+# 작업 시간 :  0:18:46.142395

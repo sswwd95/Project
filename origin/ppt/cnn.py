@@ -102,7 +102,6 @@ model.add(MaxPooling2D(pool_size=2))
 model.add(Conv2D(256, 3, activation='relu'))
 model.add(Dropout(0.2))
 model.add(MaxPooling2D(pool_size=2))
-
 model.add(Flatten())
 model.add(Dense(512, activation='relu'))
 model.add(Dropout(0.3))

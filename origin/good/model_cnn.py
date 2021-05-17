@@ -24,7 +24,6 @@ def load_images(directory):
     X = np.array(X).astype('float32')/255.
     Y = np.array(Y).astype('float32')
     Y = to_categorical(Y, num_classes=29)
-
     return(X,Y)
 '''
 print(X, Y)

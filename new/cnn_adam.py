@@ -54,7 +54,7 @@ plt.suptitle("Example of each sign", fontsize=20)
 '''
 from sklearn.model_selection import train_test_split
 x_train, x_test, y_train, y_test = train_test_split(
-    X, Y, test_size=0.2, random_state=42)
+    X, Y, test_size=0.2, random_state=42,stratify=Y)
 
 x_train, x_val, y_train, y_val = train_test_split(
     x_train, y_train, test_size=0.2, random_state=42
@@ -81,7 +81,6 @@ model.add(MaxPooling2D(pool_size=2))
 model.add(Conv2D(256, 3, activation='relu'))
 model.add(Dropout(0.3))
 model.add(MaxPooling2D(pool_size=2))
-
 model.add(Flatten())
 model.add(Dense(512, activation='relu'))
 model.add(Dropout(0.3))
@@ -93,16 +92,15 @@ from keras.optimizers import Adam,RMSprop,Adadelta,Nadam
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau,ModelCheckpoint, TensorBoard
 es=EarlyStopping(patience=20, verbose=1, monitor='val_loss',restore_best_weights = True)
 rl=ReduceLROnPlateau(patience=10, verbose=1, monitor='val_loss')
-filepath = 'A:/study/asl_data/h5/CNN_128_adam5.h5'
-tb = TensorBoard(log_dir='A:/study/asl_data//graph/'+ 'CNN_128_adam5'+ "/",histogram_freq=0, write_graph=True, write_images=True)
+filepath = 'A:/study/asl_data/h5/CNN_128_adam3.h5'
+tb = TensorBoard(log_dir='A:/study/asl_data//graph/'+ 'CNN_128_adam3'+ "/",histogram_freq=0, write_graph=True, write_images=True)
 mc = ModelCheckpoint(filepath=filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='auto')
 
-
-op = Adam(lr=0.00005)
+op = Adam(lr=0.001)
 model.compile(optimizer=op, loss = 'categorical_crossentropy', metrics = ['accuracy'])
 history=model.fit(x_train, y_train, epochs = 1000,callbacks=[es,rl,mc, tb], batch_size = 32, validation_data=(x_val,y_val))
 
-model.save('A:/study/asl_data/h5/128.CNN_128_adam5.h5')
+model.save('A:/study/asl_data/h5/128.CNN_128_adam3.h5')
 
 results = model.evaluate(x = x_test, y = y_test, verbose = 0)
 print('Accuracy for test images:', round(results[1]*100, 3), '%')                                   
@@ -134,5 +132,12 @@ print("작업 시간 : " , time)
 # plt.legend(['acc', 'val_acc', 'loss', 'val_loss'])
 # plt.show()
 
+# op = Adam(lr=0.00005)
 # Accuracy for test images: 100.0 %
 # Accuracy for evaluation images: 26.897 %
+
+# Epoch 00083: val_loss did not improve from 0.00087
+# Epoch 00083: early stopping
+# Accuracy for test images: 99.989 %
+# Accuracy for evaluation images: 47.931 %
+# 작업 시간 :  1:50:13.548681
