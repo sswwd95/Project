@@ -8,4 +8,4 @@
 + Model : CNN, VGG16
 + API : Tensorflow, keras, Numpy, matplotlib
 ---
-#### ppt
+#### PPT
