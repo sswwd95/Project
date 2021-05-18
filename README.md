@@ -7,5 +7,4 @@
 + Tool: Visual Studio Code
 + Model : CNN, VGG16
 + API : Tensorflow, keras, Numpy, matplotlib
----
-#### PPT
+
