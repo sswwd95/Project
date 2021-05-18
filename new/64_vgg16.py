@@ -56,8 +56,8 @@ from tensorflow.keras.applications.vgg16 import VGG16
 
 model = Sequential()
 model.add(VGG16(weights='imagenet', include_top=False, input_shape=(64,64,3)))
-for layer in model.layers:
-     layer.trainable = False
+# for layer in model.layers:
+#      layer.trainable = False
 model.add(Flatten())
 model.add(Dense(512, activation='relu'))
 model.add(Dropout(0.3))
@@ -78,15 +78,15 @@ start = datetime.now()
 from keras.optimizers import Adam,RMSprop,Adadelta,Nadam
 es=EarlyStopping(patience=8, verbose=1, monitor='val_loss',restore_best_weights = True)
 rl=ReduceLROnPlateau(vactor=0.2, patience=4, verbose=1, monitor='val_loss')
-filepath = 'A:/study/asl_data/h5/vgg16_64_sgd2_false.h5'
-tb = TensorBoard(log_dir='A:/study/asl_data//graph/'+ 'vgg16_64_sgd2_false'+ "/",histogram_freq=0, write_graph=True, write_images=True)
+filepath = 'A:/study/asl_data/h5/vgg16_SGD2.h5'
+tb = TensorBoard(log_dir='A:/study/asl_data//graph/'+ 'vgg16_SGD2'+ "/",histogram_freq=0, write_graph=True, write_images=True)
 mc = ModelCheckpoint(filepath=filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='auto')
 
 op = SGD(lr=0.01)
 model.compile(optimizer=op, loss = 'categorical_crossentropy', metrics = ['accuracy'])
 history=model.fit(x_train, y_train, epochs = 1000,callbacks=[es,rl,mc,tb], batch_size = 32,validation_split=0.2)
 
-model.load_weights('A:/study/asl_data/h5/vgg16_64_sgd2_false.h5')
+model.load_weights('A:/study/asl_data/h5/vgg16_SGD2.h5')
 
 results = model.evaluate(x_test, y_test,batch_size = 32)
 print('Accuracy for test images:', round(results[1]*100, 3), '%')                                   
@@ -133,11 +133,46 @@ plt.show()
 # val_loss :  0.009836621582508087
 
 # adam3
+# Accuracy for test images: 3.448 %
+# Accuracy for evaluation images: 3.448 %
+# 작업 시간 :  0:04:28.250091
+# acc :  0.03475215658545494
+# val_acc :  0.031681034713983536
+# loss :  3.3672916889190674
+# val_loss :  3.3679025173187256
 
 # rmsprop3
+# Accuracy for test images: 3.448 %
+# Accuracy for evaluation images: 3.448 %
+# 작업 시간 :  0:06:06.658671
+# acc :  0.03518319129943848
+# val_acc :  0.031681034713983536
+# loss :  3.3672971725463867
+# val_loss :  3.367945671081543
 
 # adadelta3
+# Accuracy for test images: 99.971 %
+# Accuracy for evaluation images: 35.172 %
+# 작업 시간 :  0:21:07.682019
+# acc :  0.9993534684181213
+# val_acc :  0.9998562932014465
+# loss :  0.002685852814465761
+# val_loss :  0.0007707947515882552
 
 # nadam3
+# Accuracy for test images: 3.448 %
+# Accuracy for evaluation images: 3.448 %
+# 작업 시간 :  0:07:54.130016
+# acc :  0.03530890867114067
+# val_acc :  0.03117816150188446
+# loss :  3.3672797679901123
+# val_loss :  3.367924928665161
 
 # sgd2
+# Accuracy for test images: 100.0 %
+# Accuracy for evaluation images: 50.23 %
+# 작업 시간 :  0:17:35.210723
+# acc :  1.0
+# val_acc :  1.0
+# loss :  2.08370438485872e-05
+# val_loss :  8.520320989191532e-06
