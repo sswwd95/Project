@@ -55,7 +55,7 @@ from keras.models import Sequential
 from tensorflow.keras.applications.vgg16 import VGG16
 
 model = Sequential()
-model.add(VGG16(weights='imagenet', include_top=False, input_shape=(64,64,3)))
+model.add(VGG16(weights='imagenet', include_top=True, input_shape=(64,64,3)))
 # for layer in model.layers:
 #      layer.trainable = False
 model.add(Flatten())
@@ -72,7 +72,7 @@ model.add(Dropout(0.3))
 model.add(Dense(29, activation='softmax'))
 model.summary()
 '''
-
+'''
 start = datetime.now()
 
 from keras.optimizers import Adam,RMSprop,Adadelta,Nadam
@@ -117,7 +117,7 @@ plt.xlabel('epoch')
 
 plt.legend(['acc', 'val_acc', 'loss', 'val_loss'])
 plt.show()
-
+'''
 # SGD(0.01) : trainable = True
 # Accuracy for test images: 100.0 %
 # Accuracy for evaluation images: 51.264 %
