@@ -9,6 +9,7 @@ from tensorflow.keras.utils import to_categorical
 from datetime import datetime
 
 from tensorflow.python.keras.optimizer_v2 import rmsprop
+from tensorflow.python.keras.optimizer_v2.gradient_descent import SGD
 
 np.random.seed(42)
 
@@ -95,15 +96,15 @@ from keras.callbacks import EarlyStopping, ReduceLROnPlateau,ModelCheckpoint, Te
 
 es=EarlyStopping(patience=20, verbose=1, monitor='val_loss',restore_best_weights = True)
 rl=ReduceLROnPlateau(patience=10, verbose=1, monitor='val_loss')
-filepath = 'A:/study/asl_data/h5/CNN_64_DEL3.h5'
+filepath = 'A:/study/asl_data/h5/CNN_64_SGD2.h5'
 mc = ModelCheckpoint(filepath=filepath, monitor='val_loss', 
                     verbose=1, save_best_only=True, mode='auto')
-op = Adadelta(lr=0.001)
+op = SGD(lr=0.01)
 model.compile(optimizer=op, loss = 'categorical_crossentropy', metrics = ['accuracy'])
 history=model.fit(x_train, y_train, epochs = 1000,callbacks=[es,rl,mc], 
                   batch_size = 32, validation_data=(x_val,y_val))
 
-model.save('A:/study/asl_data/h5/CNN_64_DEL3.h5')
+model.save('A:/study/asl_data/h5/CNN_64_SGD2.h5')
 
 results = model.evaluate(x = x_test, y = y_test, verbose = 0)
 print('Accuracy for test images:', round(results[1]*100, 3), '%')                                   
@@ -163,8 +164,28 @@ plt.show()
 # val_loss :  0.00051312759751454
 
 # adadelta3
+# Accuracy for test images: 96.511 %
+# Accuracy for evaluation images: 21.494 %
+# 작업 시간 :  1:48:41.042930
+# acc :  0.9201867580413818
+# val_acc :  0.965732753276825
+# loss :  0.23254600167274475
+# val_loss :  0.5545966029167175
 
 # nadam3
+# Accuracy for test images: 99.989 %
+# Accuracy for evaluation images: 57.241 %
+# 작업 시간 :  0:33:14.115242
+# acc :  0.9997305870056152
+# val_acc :  0.9998562932014465
+# loss :  0.0015300079248845577
+# val_loss :  0.0004186548467259854
 
 # sgd2
-
+# Accuracy for test images: 100.0 %
+# Accuracy for evaluation images: 41.379 %
+# 작업 시간 :  0:35:19.678746
+# acc :  0.9998024702072144
+# val_acc :  0.9999281764030457
+# loss :  0.0008428720757365227
+# val_loss :  0.005195867735892534
