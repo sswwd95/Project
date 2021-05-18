@@ -81,14 +81,16 @@ model.add(MaxPooling2D(pool_size=2))
 model.add(Conv2D(128, 3, activation='relu'))
 model.add(Dropout(0.3))
 model.add(MaxPooling2D(pool_size=2))
-model.add(Conv2D(256, 3, activation='relu'))
-model.add(Dropout(0.3))
-model.add(MaxPooling2D(pool_size=2))
+# model.add(Conv2D(256, 3, activation='relu'))
+# model.add(Dropout(0.3))
+# model.add(MaxPooling2D(pool_size=2))
 model.add(Flatten())
-model.add(Dense(512, activation='relu'))
-model.add(Dropout(0.3))
+# model.add(Dense(512, activation='relu'))
+# model.add(Dropout(0.3))
 model.add(Dense(29, activation='softmax'))
 model.summary()
+
+model.save('A:/study/asl_data/h5/CNN_64_na2_tun_model.h5')
 start = datetime.now()
 
 from keras.optimizers import Adam,RMSprop,Adadelta,Nadam
@@ -96,15 +98,15 @@ from keras.callbacks import EarlyStopping, ReduceLROnPlateau,ModelCheckpoint, Te
 
 es=EarlyStopping(patience=20, verbose=1, monitor='val_loss',restore_best_weights = True)
 rl=ReduceLROnPlateau(patience=10, verbose=1, monitor='val_loss')
-filepath = 'A:/study/asl_data/h5/CNN_64_SGD2.h5'
+filepath = 'A:/study/asl_data/h5/CNN_64_na2_tun.h5'
 mc = ModelCheckpoint(filepath=filepath, monitor='val_loss', 
                     verbose=1, save_best_only=True, mode='auto')
-op = SGD(lr=0.01)
+op = Nadam(lr=0.001)
 model.compile(optimizer=op, loss = 'categorical_crossentropy', metrics = ['accuracy'])
 history=model.fit(x_train, y_train, epochs = 1000,callbacks=[es,rl,mc], 
                   batch_size = 32, validation_data=(x_val,y_val))
 
-model.save('A:/study/asl_data/h5/CNN_64_SGD2.h5')
+model.save('A:/study/asl_data/h5/CNN_64_na2_tun.h5')
 
 results = model.evaluate(x = x_test, y = y_test, verbose = 0)
 print('Accuracy for test images:', round(results[1]*100, 3), '%')                                   
@@ -189,3 +191,51 @@ plt.show()
 # val_acc :  0.9999281764030457
 # loss :  0.0008428720757365227
 # val_loss :  0.005195867735892534
+
+
+
+# 파라미터 수를 더 줄여보자!
+'''
+model = Sequential()
+model.add(Conv2D(64, 3, input_shape=(64,64,3), activation='relu'))
+model.add(Dropout(0.3))
+model.add(MaxPooling2D(pool_size=2))
+model.add(Conv2D(64, 3, activation='relu'))
+model.add(Dropout(0.3))
+model.add(MaxPooling2D(pool_size=2))
+model.add(Conv2D(128, 3, activation='relu'))
+model.add(Dropout(0.3))
+model.add(MaxPooling2D(pool_size=2))
+model.add(Flatten())
+model.add(Dense(29, activation='softmax'))
+model.summary()
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #
+=================================================================
+conv2d (Conv2D)              (None, 62, 62, 64)        1792
+_________________________________________________________________
+dropout (Dropout)            (None, 62, 62, 64)        0
+_________________________________________________________________
+max_pooling2d (MaxPooling2D) (None, 31, 31, 64)        0
+_________________________________________________________________
+conv2d_1 (Conv2D)            (None, 29, 29, 64)        36928
+_________________________________________________________________
+dropout_1 (Dropout)          (None, 29, 29, 64)        0
+_________________________________________________________________
+max_pooling2d_1 (MaxPooling2 (None, 14, 14, 64)        0
+_________________________________________________________________
+conv2d_2 (Conv2D)            (None, 12, 12, 128)       73856
+_________________________________________________________________
+dropout_2 (Dropout)          (None, 12, 12, 128)       0
+_________________________________________________________________
+max_pooling2d_2 (MaxPooling2 (None, 6, 6, 128)         0
+_________________________________________________________________
+flatten (Flatten)            (None, 4608)              0
+_________________________________________________________________
+dense (Dense)                (None, 29)                133661
+=================================================================
+Total params: 246,237
+Trainable params: 246,237
+Non-trainable params: 0
+_________________________________________________________________
+'''
